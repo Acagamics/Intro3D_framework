@@ -1,4 +1,34 @@
 Intro3D_framework
 =================
 
-Framework for "Introduction to 3D Game Development" lecture http://acagamics.cs.ovgu.de/?p=8472
+Minimalistic framework for ["Introduction to 3D Game Development" lecture](http://acagamics.cs.ovgu.de/?p=8472).
+Serves as quick start to OpenGL programming and 3D game development.
+
+Dependencies
+----------------
+* OpenTK (using OpenGL 3.3)
+* Assimp
+
+Roadmap
+----------------
+* until start of lecture
+  * math basics (?)
+  * texture class
+  * model class
+    * Easy loading (including textures)
+  * shaders
+    * create vertex/fragment shader using text input
+  * uniform buffer handling
+    * simplistic design, based on user defined structs that mirror the buffer's layout
+  * text rendering (simplistic, like this http://www.opentk.com/doc/graphics/how-to-render-text-using-opengl)
+  * game class? (loop, timing etc.)
+  * sample project
+    * gameloop/time
+    * draw a few models without any light (simplistic shader)
+    * some thing that user can move around with arrow keys (plain .NET input)
+    * no actual camera class, just a static view
+    
+* 2nd lecture
+  * simple lighting within sample project
+  
+* ...
