@@ -1,0 +1,9 @@
+*.userprefs
+*.suo
+*.pdb
+
+/Intro3DFramework/bin
+/Intro3DFramework/obj
+/Sample/bin
+/Sample/obj
+/packages
