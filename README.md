@@ -12,17 +12,19 @@ Dependencies
 Roadmap
 ----------------
 * until start of lecture
-  * math basics (?)
-  * texture class
-  * model class
+  * ~~math basics (?)~~ _already contained in OpenTK_
+  * [x] Resource System (similar'ish to XNA Content Manager)
+    * helps to avoid loading multiple times the same resource 
+  * [ ] texture class
+  * [ ] model class
     * Easy loading (including textures)
-  * shaders
+  * [ ] shaders
     * create vertex/fragment shader using text input
-  * uniform buffer handling
+  * [ ] uniform buffer handling
     * simplistic design, based on user defined structs that mirror the buffer's layout
-  * text rendering (simplistic, like this http://www.opentk.com/doc/graphics/how-to-render-text-using-opengl)
-  * game class? (loop, timing etc.)
-  * sample project
+  * [ ] text rendering (simplistic, like this http://www.opentk.com/doc/graphics/how-to-render-text-using-opengl)
+  * ~~game class? (loop, timing etc.)~~ _most of it already contained in OpenTK_
+  * [ ] sample project
     * gameloop/time
     * draw a few models without any light (simplistic shader)
     * some thing that user can move around with arrow keys (plain .NET input)
