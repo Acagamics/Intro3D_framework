@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Rendering\Shader.cs" />
     <Compile Include="ResourceSystem\BaseResource.cs" />
     <Compile Include="ResourceSystem\ResourceException.cs" />
     <Compile Include="ResourceSystem\ResourceManager.cs" />

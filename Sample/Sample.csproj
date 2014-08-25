@@ -45,6 +45,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="Content\cornellspheres.mtl" />
+    <None Include="Content\cornellspheres.obj" />
+    <None Include="Content\simple.frag" />
+    <None Include="Content\simple.vert" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

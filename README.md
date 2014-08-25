@@ -18,12 +18,13 @@ Roadmap
   * [ ] texture class
   * [ ] model class
     * Easy loading (including textures)
-  * [ ] shaders
-    * create vertex/fragment shader using text input
+  * [x] shaders
+    * create vertex/fragment shader using ~~text input~~ text files
   * [ ] uniform buffer handling
     * simplistic design, based on user defined structs that mirror the buffer's layout
   * [ ] text rendering (simplistic, like this http://www.opentk.com/doc/graphics/how-to-render-text-using-opengl)
   * ~~game class? (loop, timing etc.)~~ _most of it already contained in OpenTK_
+  * [ ] activate best available debug extension (makes debugging much easier, especially for newcomers!)
   * [ ] sample project
     * gameloop/time
     * draw a few models without any light (simplistic shader)

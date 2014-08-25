@@ -12,17 +12,15 @@ namespace Examples.Tutorial
     public class SimpleWindow : GameWindow
     {
         private Model model;
+        private Shader shader;
 
         public SimpleWindow()
             : base(800, 600)
         {
             Keyboard.KeyDown += Keyboard_KeyDown;
 
-            // For testing.
-            // model = Model.GetResource("Content/cornellspheres.obj");
-           // model.RemoveResource();
-            
             model = Model.GetResource("Content/cornellspheres.obj");
+            shader = Shader.GetResource(new Shader.LoadDescription("Content/simple.vert", "Content/simple.frag"));
         }
 
         /// <summary>
@@ -91,6 +89,7 @@ namespace Examples.Tutorial
             Matrix4 view = OpenTK.Matrix4.LookAt(new Vector3(0.0f, 0.8f, 3.0f), new Vector3(0.0f, 0.8f, 0.0f), Vector3.UnitY);
             GL.LoadMatrix(ref view);
 
+            GL.UseProgram(shader.Program);
             model.Draw();
                 
             this.SwapBuffers();
