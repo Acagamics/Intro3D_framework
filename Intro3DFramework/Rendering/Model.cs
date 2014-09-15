@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Intro3DFramework.ResourceSystem;
 using OpenTK.Graphics.OpenGL;
 using System.Runtime.InteropServices;
@@ -119,6 +115,14 @@ namespace Intro3DFramework.Rendering
                 {
                     throw new ResourceException(ResourceException.Type.LOAD_ERROR, "Invalid Assimp context!", e);
                 }
+                catch (System.Exception e)
+                {
+                    throw new ResourceException(ResourceException.Type.LOAD_ERROR, "Unknown error during loading file \"" + description.filename + " via Assimp!", e);
+                }
+                if(scene == null)
+                {
+                    throw new ResourceException(ResourceException.Type.LOAD_ERROR, "Unknown error during loading file \"" + description.filename + " via Assimp!");
+                }
             }
 
             // Tangents are needed if any of the meshes has them.
@@ -188,7 +192,7 @@ namespace Intro3DFramework.Rendering
                         pVertex -= vertexSize * mesh.VertexCount;
                     }
                     else
-                        Console.Error.WriteLine("Model \"{0}\", mesh \"{1}\" has not the required texture coordinates!", description.filename, mesh.Name);
+                        Console.Error.WriteLine("Warning: Model \"{0}\", mesh \"{1}\" has no texture coordinates!", description.filename, mesh.Name);
                     pVertex += sizeof(float) * 2; // sizeof texcoord
 
                     // tangents
@@ -226,22 +230,24 @@ namespace Intro3DFramework.Rendering
                 // Allocate temporary storage
                 IntPtr pIndices;
                 int indexSize = 0;
-                if(using32BitIndices)
+                if(using32BitIndices) // Any idea how to avoid this code duplication? Generics have no arithmetic type restriction possibility!
                 {
                     indexSize = 4;
                     pIndices = Marshal.AllocHGlobal((int)NumTriangles * indexSize * 3);
                     UInt32* pIndex = (UInt32*)pIndices;
+                    int baseIndex = 0;
                     foreach(Assimp.Mesh mesh in scene.Meshes)
                     {
                         for (int faceIdx = 0; faceIdx < mesh.Faces.Count; ++faceIdx)
                         {
-                            *pIndex = (UInt32)mesh.Faces[faceIdx].Indices[0];
+                            *pIndex = (UInt32)(mesh.Faces[faceIdx].Indices[0] + baseIndex);
                             ++pIndex;
-                            *pIndex = (UInt32)mesh.Faces[faceIdx].Indices[1];
+                            *pIndex = (UInt32)(mesh.Faces[faceIdx].Indices[1] + baseIndex);
                             ++pIndex;
-                            *pIndex = (UInt32)mesh.Faces[faceIdx].Indices[2];
+                            *pIndex = (UInt32)(mesh.Faces[faceIdx].Indices[2] + baseIndex);
                             ++pIndex;
                         }
+                        baseIndex += mesh.VertexCount;
                     }
                 }
                 else
@@ -249,20 +255,21 @@ namespace Intro3DFramework.Rendering
                     indexSize = 2;
                     pIndices = Marshal.AllocHGlobal((int)NumTriangles * indexSize * 3);
                     UInt16* pIndex = (UInt16*)pIndices;
+                    int baseIndex = 0;
                     foreach (Assimp.Mesh mesh in scene.Meshes)
                     {
                         for (int faceIdx = 0; faceIdx < mesh.Faces.Count; ++faceIdx)
                         {
-                            *pIndex = (UInt16)mesh.Faces[faceIdx].Indices[0];
+                            *pIndex = (UInt16)(mesh.Faces[faceIdx].Indices[0] + baseIndex);
                             ++pIndex;
-                            *pIndex = (UInt16)mesh.Faces[faceIdx].Indices[1];
+                            *pIndex = (UInt16)(mesh.Faces[faceIdx].Indices[1] + baseIndex);
                             ++pIndex;
-                            *pIndex = (UInt16)mesh.Faces[faceIdx].Indices[2];
+                            *pIndex = (UInt16)(mesh.Faces[faceIdx].Indices[2] + baseIndex);
                             ++pIndex;
                         }
+                        baseIndex += mesh.VertexCount;
                     }
                 }
-
 
                 indexBuffer = GL.GenBuffer();
                 GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
@@ -270,7 +277,6 @@ namespace Intro3DFramework.Rendering
 
                 Marshal.FreeHGlobal(pIndices);
             }
-
         }
 
         public void Draw()
@@ -289,12 +295,10 @@ namespace Intro3DFramework.Rendering
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, vertexSize, sizeof(float) * 6);
             GL.EnableVertexAttribArray(2);
-            GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, vertexSize, sizeof(float) * 8);
-            GL.EnableVertexAttribArray(3);
             if(HasTangents)
             {
-                GL.VertexAttribPointer(4, 3, VertexAttribPointerType.Float, false, vertexSize, sizeof(float) * 11);
-                GL.EnableVertexAttribArray(4);
+                GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, vertexSize, sizeof(float) * 8);
+                GL.EnableVertexAttribArray(3);
             }
 
             // TODO: shader?
