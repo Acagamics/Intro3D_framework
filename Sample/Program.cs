@@ -3,9 +3,8 @@ using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
-
-using Intro3DFramework.ResourceSystem;
 using Intro3DFramework.Rendering;
+using System.Runtime.InteropServices;
 
 namespace Examples.Tutorial
 {
@@ -14,6 +13,15 @@ namespace Examples.Tutorial
         private Model model;
         private Shader shader;
 
+        [StructLayout(LayoutKind.Sequential)]
+        struct PerObjectUniformData
+        {
+            public OpenTK.Matrix4 worldViewProjection;
+        }
+        private PerObjectUniformData perObjectUniformData;
+        private UniformBuffer<PerObjectUniformData> perObjectUniformGPUBuffer;
+
+
         public SimpleWindow()
             : base(800, 600)
         {
@@ -21,6 +29,7 @@ namespace Examples.Tutorial
 
             model = Model.GetResource("Content/cornellspheres.obj");
             shader = Shader.GetResource(new Shader.LoadDescription("Content/simple.vert", "Content/simple.frag"));
+            perObjectUniformGPUBuffer = new UniformBuffer<PerObjectUniformData>();
         }
 
         /// <summary>
@@ -69,7 +78,8 @@ namespace Examples.Tutorial
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            // Nothing to do!
+            perObjectUniformData.worldViewProjection = OpenTK.Matrix4.LookAt(new Vector3(0.0f, 0.8f, 3.0f), new Vector3(0.0f, 0.8f, 0.0f), Vector3.UnitY) *
+                                                       OpenTK.Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.5f, (float)Width / Height, 0.1f, 200.0f);
         }
 
         /// <summary>
@@ -79,19 +89,18 @@ namespace Examples.Tutorial
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnRenderFrame(FrameEventArgs e)
         {
+            // Update uniform buffer data.
+            perObjectUniformGPUBuffer.UpdateGPUData(ref perObjectUniformData);
+
+            // Clear scenes
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
-            // Test render with fixed function pipe.
-            GL.MatrixMode(MatrixMode.Projection);
-            Matrix4 projection = OpenTK.Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.5f, (float)Width / Height, 0.1f, 200.0f);
-            GL.LoadMatrix(ref projection);
-            GL.MatrixMode(MatrixMode.Modelview);
-            Matrix4 view = OpenTK.Matrix4.LookAt(new Vector3(0.0f, 0.8f, 3.0f), new Vector3(0.0f, 0.8f, 0.0f), Vector3.UnitY);
-            GL.LoadMatrix(ref view);
-
-            GL.UseProgram(shader.Program);
-            model.Draw();
+            // Draw a model!
+            GL.UseProgram(shader.Program);              // Activate shader.
+            perObjectUniformGPUBuffer.BindBuffer(0);    // Set "perObject" uniform buffer to binding point 0.
+            model.Draw();       // Actual drawing! (does also some stuff internally upfront ;))
                 
+            // Swap back and front buffer (=display sth.!).
             this.SwapBuffers();
         }
 

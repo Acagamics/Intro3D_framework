@@ -79,18 +79,18 @@ namespace Intro3DFramework.Rendering
             vertexShader = GL.CreateShader(ShaderType.VertexShader);
             GL.ShaderSource(vertexShader, vertexShaderCode);
             GL.CompileShader(vertexShader);
-            Console.WriteLine("Compiling vertex shader \"" + description.vertexShaderFilename + "\", Log:\n\"" + GL.GetShaderInfoLog(vertexShader) + "\"");
+            Console.WriteLine("Compiling vertex shader \"" + description.vertexShaderFilename + "\", Log: \"" + GL.GetShaderInfoLog(vertexShader) + "\"");
 
             fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
             GL.ShaderSource(fragmentShader, fragmentShaderCode);
             GL.CompileShader(fragmentShader);
-            Console.WriteLine("Compiling fragment shader \"" + description.fragmentShaderFilename + "\", Log:\n\"" + GL.GetShaderInfoLog(fragmentShader) + "\"");
+            Console.WriteLine("Compiling fragment shader \"" + description.fragmentShaderFilename + "\", Log: \"" + GL.GetShaderInfoLog(fragmentShader) + "\"");
 
             program = GL.CreateProgram();
             GL.AttachShader(program, vertexShader);
             GL.AttachShader(program, fragmentShader);
             GL.LinkProgram(program);
-            Console.WriteLine("Linking shader program, Log:\n\"" + GL.GetProgramInfoLog(program) + "\"");
+            Console.WriteLine("Linking shader program, Log: \"" + GL.GetProgramInfoLog(program) + "\"");
 
             Console.WriteLine();
         }

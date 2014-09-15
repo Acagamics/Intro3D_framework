@@ -1,4 +1,12 @@
+#version 330
+
+// Input = output from vertex shader.
+in vec3 inNormal;
+in vec2 inTexcoord;
+
+out vec4 outputColor;
+
 void main()  
 {     
-  gl_FragColor = vec4(0.0, 1.0, 0.0, 1.0);  
+  outputColor = vec4(abs(inNormal), 1.0);  
 }
