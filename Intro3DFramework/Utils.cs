@@ -45,32 +45,25 @@ namespace Intro3DFramework
             GL.Enable(EnableCap.DebugOutputSynchronous);
             unsafe
             {
-                switch (minSeverity)
-                {
-                    case DebugSeverity.DebugSeverityNotification:
-                        GL.Arb.DebugMessageControl((OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
-                                                   (OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
-                                                   (OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DebugSeverityNotification, 0, (int*)null, true);
-                        goto case DebugSeverity.DebugSeverityLow;
+                GL.Arb.DebugMessageControl((OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
+                                            (OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
+                                            (OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DebugSeverityNotification, 0, (int*)null, 
+                                            minSeverity == DebugSeverity.DebugSeverityNotification);
 
-                    case DebugSeverity.DebugSeverityLow:
-                        GL.Arb.DebugMessageControl((OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
-                                                   (OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
-                                                    OpenTK.Graphics.OpenGL.ArbDebugOutput.DebugSeverityLowArb, 0, (int*)null, true);
-                        goto case DebugSeverity.DebugSeverityMedium;
+                GL.Arb.DebugMessageControl((OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
+                                            (OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
+                                            OpenTK.Graphics.OpenGL.ArbDebugOutput.DebugSeverityLowArb, 0, (int*)null,
+                                            minSeverity == DebugSeverity.DebugSeverityNotification || minSeverity == DebugSeverity.DebugSeverityLow);
 
-                    case DebugSeverity.DebugSeverityMedium:
-                        GL.Arb.DebugMessageControl((OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
-                                                   (OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
-                                                   OpenTK.Graphics.OpenGL.ArbDebugOutput.DebugSeverityMediumArb, 0, (int*)null, true);
-                        goto case DebugSeverity.DebugSeverityHigh;
+                GL.Arb.DebugMessageControl((OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
+                                            (OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
+                                            OpenTK.Graphics.OpenGL.ArbDebugOutput.DebugSeverityMediumArb, 0, (int*)null,
+                                            minSeverity != DebugSeverity.DebugSeverityHigh);
 
-                    case DebugSeverity.DebugSeverityHigh:
-                        GL.Arb.DebugMessageControl((OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
-                                                   (OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
-                                                   OpenTK.Graphics.OpenGL.ArbDebugOutput.DebugSeverityHighArb, 0, (int*)null, true);
-                        break;
-                }
+                GL.Arb.DebugMessageControl((OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
+                                            (OpenTK.Graphics.OpenGL.ArbDebugOutput)OpenTK.Graphics.OpenGL.All.DontCare,
+                                            OpenTK.Graphics.OpenGL.ArbDebugOutput.DebugSeverityHighArb, 0, (int*)null, true);
+
             }
             GL.Arb.DebugMessageCallback(DebugMessageCallback, IntPtr.Zero);
         }
@@ -81,7 +74,9 @@ namespace Intro3DFramework
         static private void DebugMessageCallback(DebugSource source, DebugType type, int id, DebugSeverity severity, int length, IntPtr message, IntPtr userParam)
         {
             string messageContent = System.Runtime.InteropServices.Marshal.PtrToStringAnsi(message, length);
-            string messageText = string.Format("{0}: {1}({2}) {3}: {4}", source.ToString(), type.ToString(), severity.ToString(), id, messageContent);
+            string messageText = string.Format("{0}: {1}({2}) {3}: {4}", source.ToString().Replace("DebugSource", ""),
+                                                                         type.ToString().Replace("DebugType", ""),
+                                                                         severity.ToString().Replace("DebugSeverity", ""), id, messageContent);
             System.Diagnostics.Debug.Assert(severity != DebugSeverity.DebugSeverityHigh, messageText);
             Console.WriteLine(messageText);
         }
