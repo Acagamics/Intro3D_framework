@@ -211,7 +211,7 @@ namespace Intro3DFramework.Rendering
                         pVertex += sizeof(float) * 3; // sizeof tangent
                     }
 
-                    pVertex = pVertex + mesh.VertexCount * (vertexSize - 1); // Go to the next vertex. Attention the offsets summed up to one vertex!
+                    pVertex = pVertex + (mesh.VertexCount - 1) * vertexSize; // Go to the next vertex. Attention the offsets summed up to one vertex!
                 }
 
                 // Create and fill OpenGL vertex buffer.
@@ -304,7 +304,7 @@ namespace Intro3DFramework.Rendering
             // TODO: shader?
             // TODO: textures?
 
-            GL.DrawElements(PrimitiveType.TriangleStrip, (int)NumTriangles * 3, using32BitIndices ? DrawElementsType.UnsignedInt : DrawElementsType.UnsignedShort, 0);
+            GL.DrawElements(PrimitiveType.Triangles, (int)NumTriangles * 3, using32BitIndices ? DrawElementsType.UnsignedInt : DrawElementsType.UnsignedShort, 0);
         }
 
         #region Disposing

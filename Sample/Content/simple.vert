@@ -11,14 +11,14 @@ layout(location = 1) in vec3 inNormal;
 layout(location = 2) in vec2 inTexcoord;
 
 // Output = input for fragment shader.
-out vec3 outNormal;
-out vec2 outTexcoord;
+out vec3 Normal;
+out vec2 Texcoord;
 
 void main(void)
 {
   gl_Position = WorldViewProjection * vec4(inPosition, 1.0);
 
   // Simple pass through
-  outNormal = inNormal;
-  outTexcoord = inTexcoord;
+  Normal = inNormal;
+  Texcoord = inTexcoord;
 }  

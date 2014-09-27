@@ -3,6 +3,7 @@ using System.Drawing;
 using OpenTK;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
+using Intro3DFramework;
 using Intro3DFramework.Rendering;
 using System.Runtime.InteropServices;
 
@@ -27,9 +28,16 @@ namespace Examples.Tutorial
         {
             Keyboard.KeyDown += Keyboard_KeyDown;
 
-            model = Model.GetResource("Content/cornellspheres.obj");
+#if DEBUG
+            Utils.ActivateDebugMessages();
+#endif
+
+            model = Model.GetResource("Content/Panda_oneMesh.FBX");
             shader = Shader.GetResource(new Shader.LoadDescription("Content/simple.vert", "Content/simple.frag"));
             perObjectUniformGPUBuffer = new UniformBuffer<PerObjectUniformData>();
+
+            // Activate depth test.
+            GL.Enable(EnableCap.DepthTest);
         }
 
         /// <summary>
@@ -78,7 +86,7 @@ namespace Examples.Tutorial
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            perObjectUniformData.worldViewProjection = OpenTK.Matrix4.LookAt(new Vector3(0.0f, 0.8f, 3.0f), new Vector3(0.0f, 0.8f, 0.0f), Vector3.UnitY) *
+            perObjectUniformData.worldViewProjection = OpenTK.Matrix4.LookAt(new Vector3(0.0f, -100.0f, 0.0f), new Vector3(0.0f, 0.0f, 0.0f), Vector3.UnitZ) *
                                                        OpenTK.Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.5f, (float)Width / Height, 0.1f, 200.0f);
         }
 
@@ -92,8 +100,8 @@ namespace Examples.Tutorial
             // Update uniform buffer data.
             perObjectUniformGPUBuffer.UpdateGPUData(ref perObjectUniformData);
 
-            // Clear scenes
-            GL.Clear(ClearBufferMask.ColorBufferBit);
+            // Clear both color and depth buffer.
+            GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             // Draw a model!
             GL.UseProgram(shader.Program);              // Activate shader.
