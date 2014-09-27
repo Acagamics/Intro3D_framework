@@ -2,9 +2,14 @@
 using Intro3DFramework.ResourceSystem;
 using OpenTK.Graphics.OpenGL;
 using System.Runtime.InteropServices;
+using System.IO;
 
 namespace Intro3DFramework.Rendering
 {
+    /// <summary>
+    /// Simple model, consisting of multiple meshes.
+    /// Will load textures automatically. Does not handle shaders!
+    /// </summary>
     public class Model : ResourceSystem.BaseResource<Model, Model.LoadDescription>
     {
         private int vertexBuffer = -1;
@@ -12,9 +17,44 @@ namespace Intro3DFramework.Rendering
 
         private bool using32BitIndices = false;
 
+        /// <summary>
+        /// True if each vertex of this model has a tangent vector.
+        /// </summary>
         public bool HasTangents     { get; private set; }
+        /// <summary>
+        /// Total number of vertices in this model.
+        /// </summary>
         public uint NumVertices     { get; private set; }
+        /// <summary>
+        /// Total number of triangles in this model.
+        /// </summary>
         public uint NumTriangles    { get; private set; }
+
+        /// <summary>
+        /// Meshes act as submeshes.
+        /// </summary>
+        public struct Mesh
+        {
+            /// <summary>
+            /// At which index in the index buffer this mesh starts.
+            /// </summary>
+            public int startIndex;
+            /// <summary>
+            /// How many indices the mesh contains.
+            /// </summary>
+            public int numIndices;
+
+            /// <summary>
+            /// null or texture from material.TextureDiffuse.FilePath.
+            /// </summary>
+            public Texture2D texture;
+            public Assimp.Material material;
+        }
+
+        /// <summary>
+        /// List of meshes, this model consists of.
+        /// </summary>
+        public Mesh[] Meshes { get; private set; }
 
         #region Vertex Definitions
 
@@ -96,6 +136,8 @@ namespace Intro3DFramework.Rendering
         /// <param name="description">Description object describing where to find the model and how to treat it.</param>
         internal override void Load(Model.LoadDescription description)
         {
+            string modelDirectory = Path.GetDirectoryName(description.filename);
+
             Assimp.Scene scene;
             using (Assimp.AssimpContext importer = new Assimp.AssimpContext())
             {
@@ -124,20 +166,36 @@ namespace Intro3DFramework.Rendering
                     throw new ResourceException(ResourceException.Type.LOAD_ERROR, "Unknown error during loading file \"" + description.filename + " via Assimp!");
                 }
             }
-
+            
             // Tangents are needed if any of the meshes has them.
+            // Fill mesh list simultaneously.
+            Meshes = new Mesh[scene.MeshCount];
             HasTangents = false;
             NumVertices = 0;
             NumTriangles = 0;
-            foreach(Assimp.Mesh mesh in scene.Meshes)
+            for (int meshIdx = 0; meshIdx < Meshes.Length; ++meshIdx)
             {
-                if(mesh.HasTangentBasis)
+                System.Diagnostics.Debug.Assert(scene.Meshes[meshIdx].HasFaces && scene.Meshes[meshIdx].HasVertices && scene.Meshes[meshIdx].PrimitiveType == Assimp.PrimitiveType.Triangle);
+                if(scene.Meshes[meshIdx].HasTangentBasis)
                 {
                     HasTangents = true;
                 }
-                System.Diagnostics.Debug.Assert(mesh.HasFaces && mesh.HasVertices && mesh.PrimitiveType == Assimp.PrimitiveType.Triangle);
-                NumVertices += (uint)mesh.VertexCount;
-                NumTriangles += (uint)mesh.FaceCount;
+
+                Meshes[meshIdx].startIndex = (int)NumTriangles * 3;
+                Meshes[meshIdx].numIndices = scene.Meshes[meshIdx].FaceCount * 3;
+                Meshes[meshIdx].material = scene.Materials[scene.Meshes[meshIdx].MaterialIndex];
+                try
+                {
+                    Meshes[meshIdx].texture = Texture2D.GetResource(Path.Combine(modelDirectory, Meshes[meshIdx].material.TextureDiffuse.FilePath));
+                }
+                catch(ResourceException e)
+                {
+                    System.Diagnostics.Debug.WriteLine(e.Message);
+                }
+
+
+                NumVertices += (uint)scene.Meshes[meshIdx].VertexCount;
+                NumTriangles += (uint)scene.Meshes[meshIdx].FaceCount;
             }
 
             // Create and fill vertex buffer.
@@ -187,7 +245,8 @@ namespace Intro3DFramework.Rendering
                     {
                         for (int meshVertexIndex = 0; meshVertexIndex < mesh.VertexCount; ++meshVertexIndex, pVertex += vertexSize)
                         {
-                            *(Assimp.Vector2D*)pVertex = new Assimp.Vector2D(mesh.TextureCoordinateChannels[0][meshVertexIndex].X, mesh.TextureCoordinateChannels[0][meshVertexIndex].Y);
+                            *(Assimp.Vector2D*)pVertex = new Assimp.Vector2D(mesh.TextureCoordinateChannels[0][meshVertexIndex].X, 
+                                                                            1.0f - mesh.TextureCoordinateChannels[0][meshVertexIndex].Y); // OpenGL texture coordinate system needs flipping.
                         }
                         pVertex -= vertexSize * mesh.VertexCount;
                     }
@@ -301,10 +360,18 @@ namespace Intro3DFramework.Rendering
                 GL.EnableVertexAttribArray(3);
             }
 
-            // TODO: shader?
-            // TODO: textures?
+            for (int meshIdx = 0; meshIdx < Meshes.Length; ++meshIdx)
+            {
+                if (Meshes[meshIdx].texture != null)
+                    GL.BindTexture(TextureTarget.Texture2D, Meshes[meshIdx].texture.Texture);
+                else
+                    GL.BindTexture(TextureTarget.Texture2D, 0);
 
-            GL.DrawElements(PrimitiveType.Triangles, (int)NumTriangles * 3, using32BitIndices ? DrawElementsType.UnsignedInt : DrawElementsType.UnsignedShort, 0);
+                if (using32BitIndices)
+                    GL.DrawElements(PrimitiveType.Triangles, Meshes[meshIdx].numIndices, DrawElementsType.UnsignedInt, Meshes[meshIdx].startIndex * 4);
+                else
+                    GL.DrawElements(PrimitiveType.Triangles, Meshes[meshIdx].numIndices, DrawElementsType.UnsignedShort, Meshes[meshIdx].startIndex * 2);
+            }
         }
 
         #region Disposing

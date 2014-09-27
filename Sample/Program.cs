@@ -29,7 +29,10 @@ namespace Examples.Tutorial
             Keyboard.KeyDown += Keyboard_KeyDown;
 
 #if DEBUG
+            // Activates OpenGL debug messages if available.
             Utils.ActivateDebugMessages();
+            // Writes all debug messages sent via System.Diagnostics.Debug to the console.
+            System.Diagnostics.Debug.Listeners.Add(new System.Diagnostics.TextWriterTraceListener(System.Console.Out));
 #endif
 
             model = Model.GetResource("Content/Panda_oneMesh.FBX");
