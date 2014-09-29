@@ -30,14 +30,16 @@ namespace Intro3DFramework.Rendering
         /// <see cref="GetResource"/>
         public struct LoadDescription : ResourceSystem.IResourceDescription
         {
-            public LoadDescription(string vertexShaderFilename, string fragmentShaderFilename)
+            public LoadDescription(string vertexShader, string fragmentShader, bool rawSourceCode = false)
             {
-                this.vertexShaderFilename = vertexShaderFilename;
-                this.fragmentShaderFilename = fragmentShaderFilename;
+                this.rawSourceCode = rawSourceCode;
+                this.vertexShader = vertexShader;
+                this.fragmentShader = fragmentShader;
             }
 
-            public string vertexShaderFilename;
-            public string fragmentShaderFilename;
+            public bool rawSourceCode;
+            public string vertexShader;
+            public string fragmentShader;
         }
 
         /// <summary>
@@ -56,41 +58,54 @@ namespace Intro3DFramework.Rendering
             System.Diagnostics.Debug.Assert(program == -1 && fragmentShader == -1 && vertexShader == -1, "Shader was already loaded.");
 
             string vertexShaderCode, fragmentShaderCode;
-            try
+            if (!description.rawSourceCode)
             {
-                vertexShaderCode = File.ReadAllText(description.vertexShaderFilename);
+                try
+                {
+                    vertexShaderCode = File.ReadAllText(description.vertexShader);
+                }
+                catch (Exception e)
+                {
+                    throw new ResourceException(e.GetType() == typeof(FileNotFoundException) ? ResourceException.Type.NOT_FOUND : ResourceException.Type.LOAD_ERROR,
+                                    "Couldn't load vertex shader code (\"" + description.vertexShader + "\")", e);
+                }
+                try
+                {
+                    fragmentShaderCode = File.ReadAllText(description.fragmentShader);
+                }
+                catch (Exception e)
+                {
+                    throw new ResourceException(e.GetType() == typeof(FileNotFoundException) ? ResourceException.Type.NOT_FOUND : ResourceException.Type.LOAD_ERROR,
+                                    "Couldn't load fragment shader code (\"" + description.fragmentShader + "\")", e);
+                }
             }
-            catch(Exception e)
+            else
             {
-                throw new ResourceException(e.GetType() == typeof(FileNotFoundException) ? ResourceException.Type.NOT_FOUND : ResourceException.Type.LOAD_ERROR, 
-                                "Couldn't load vertex shader code (\"" + description.vertexShaderFilename + "\")", e);
+                vertexShaderCode = description.vertexShader;
+                fragmentShaderCode = description.fragmentShader;
             }
-            try
-            {
-                fragmentShaderCode = File.ReadAllText(description.fragmentShaderFilename);
-            }
-            catch (Exception e)
-            {
-                throw new ResourceException(e.GetType() == typeof(FileNotFoundException) ? ResourceException.Type.NOT_FOUND : ResourceException.Type.LOAD_ERROR,
-                                "Couldn't load fragment shader code (\"" + description.fragmentShaderFilename + "\")", e);
-            }
-
             
             vertexShader = GL.CreateShader(ShaderType.VertexShader);
             GL.ShaderSource(vertexShader, vertexShaderCode);
             GL.CompileShader(vertexShader);
-            Console.WriteLine("Compiling vertex shader \"" + description.vertexShaderFilename + "\", Log: \"" + GL.GetShaderInfoLog(vertexShader) + "\"");
+            string infoLog = GL.GetShaderInfoLog(vertexShader);
+            if (infoLog.Length > 0)
+                Console.WriteLine("Compiling vertex shader \"" + description.vertexShader + "\", Log: \"" + infoLog + "\"");
 
             fragmentShader = GL.CreateShader(ShaderType.FragmentShader);
             GL.ShaderSource(fragmentShader, fragmentShaderCode);
             GL.CompileShader(fragmentShader);
-            Console.WriteLine("Compiling fragment shader \"" + description.fragmentShaderFilename + "\", Log: \"" + GL.GetShaderInfoLog(fragmentShader) + "\"");
+            infoLog = GL.GetShaderInfoLog(fragmentShader);
+            if (infoLog.Length > 0)
+                Console.WriteLine("Compiling fragment shader \"" + description.fragmentShader + "\", Log: \"" + infoLog + "\"");
 
             program = GL.CreateProgram();
             GL.AttachShader(program, vertexShader);
             GL.AttachShader(program, fragmentShader);
             GL.LinkProgram(program);
-            Console.WriteLine("Linking shader program, Log: \"" + GL.GetProgramInfoLog(program) + "\"");
+            infoLog = GL.GetProgramInfoLog(program);
+            if (infoLog.Length > 0)
+                Console.WriteLine("Linking shader program, Log: \"" + infoLog + "\"");
 
             Console.WriteLine();
         }
