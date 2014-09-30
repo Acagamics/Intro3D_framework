@@ -119,7 +119,7 @@ namespace Examples.Tutorial
             globalTextOverlay.Clear();
             globalTextOverlay.AddText("This is some test text.", new OpenTK.Vector2(5.0f), font, Brushes.Gray);
             globalTextOverlay.AddText("And some more test text here.", new OpenTK.Vector2(Width - 500, Height - 40), font, Brushes.Purple);
-            globalTextOverlay.AddText("Everybody is curios about the Framerate...", new OpenTK.Vector2(5.0f, 30.0f), font, Brushes.White);
+            globalTextOverlay.AddText("Everybody is curious about the Framerate...", new OpenTK.Vector2(5.0f, 30.0f), font, Brushes.White);
             globalTextOverlay.AddText(String.Format("Here it is FPS: {0:0.0} ({1:0.00}ms)", 1.0f / e.Time, e.Time * 1000.0f), new OpenTK.Vector2(5.0f, 60.0f), font, Brushes.White);
 
             // Update uniform buffer data.

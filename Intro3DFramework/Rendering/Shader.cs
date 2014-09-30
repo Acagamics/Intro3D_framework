@@ -30,14 +30,27 @@ namespace Intro3DFramework.Rendering
         /// <see cref="GetResource"/>
         public struct LoadDescription : ResourceSystem.IResourceDescription
         {
-            public LoadDescription(string vertexShader, string fragmentShader, bool rawSourceCode = false)
+            public enum LoadType
             {
-                this.rawSourceCode = rawSourceCode;
+                /// <summary>
+                /// Strings reprsent filenames to text files.
+                /// </summary>
+                FILE,
+
+                /// <summary>
+                /// Strings represents raw code.
+                /// </summary>
+                RAWCODE
+            }
+
+            public LoadDescription(string vertexShader, string fragmentShader, LoadType loadingType = LoadType.FILE)
+            {
+                this.type = loadingType;
                 this.vertexShader = vertexShader;
                 this.fragmentShader = fragmentShader;
             }
 
-            public bool rawSourceCode;
+            public LoadType type;
             public string vertexShader;
             public string fragmentShader;
         }
@@ -58,7 +71,7 @@ namespace Intro3DFramework.Rendering
             System.Diagnostics.Debug.Assert(program == -1 && fragmentShader == -1 && vertexShader == -1, "Shader was already loaded.");
 
             string vertexShaderCode, fragmentShaderCode;
-            if (!description.rawSourceCode)
+            if (description.type == LoadDescription.LoadType.FILE)
             {
                 try
                 {

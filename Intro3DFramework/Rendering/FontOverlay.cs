@@ -59,7 +59,7 @@ namespace Intro3DFramework.Rendering
                 "void main()  \n" +
                 "{     \n" +
                 "  OutputColor = texture(TextTexture, Texcoord);\n" +
-                "}\n", true));
+                "}\n", Shader.LoadDescription.LoadType.RAWCODE));
 
             // Create vertex buffer.
             vertexBuffer = GL.GenBuffer();
