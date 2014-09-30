@@ -13,7 +13,7 @@ const float Ambient = 0.2f;
 
 void main()  
 {     
-  float lighting = clamp(dot(Normal, GlobalLightDirection), Ambient, 1.0f);
+  float lighting = clamp(dot(Normal, GlobalLightDirection), Ambient, 1.0);
   vec3 textureColor = texture(DiffuseTexture, Texcoord).rgb;
   OutputColor = vec4(textureColor * lighting, 1.0);  
 }
