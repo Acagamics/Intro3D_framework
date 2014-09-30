@@ -49,7 +49,7 @@ namespace Intro3DFramework.Rendering
                 "out vec2 Texcoord;\n" +
                 "void main(void)\n" +
                 "{\n" +
-                  "gl_Position = vec4(inPosition, 0.0f, 1.0f);\n" +
+                  "gl_Position = vec4(inPosition, 0.0, 1.0);\n" +
                   "Texcoord = inTexcoord;\n" +
                 "}\n",
                 "#version 330\n" +
