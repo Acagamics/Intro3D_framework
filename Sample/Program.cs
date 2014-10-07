@@ -13,6 +13,7 @@ namespace Examples.Tutorial
     {
         private Model model;
         private Shader shader;
+        private bool isNormalSkinSet = true;
 
         [StructLayout(LayoutKind.Sequential)]
         struct PerObjectUniformData
@@ -48,6 +49,17 @@ namespace Examples.Tutorial
                 else
                     this.WindowState = WindowState.Fullscreen;
             }
+            // If Enter is pressed, change the skin
+            if (e.Key == Key.Enter && !e.IsRepeat)
+            {
+                if (isNormalSkinSet == true)
+                    model.Meshes[0].texture = Texture2D.GetResource("Content/Models/Skins/Panda_pink.png");
+                else
+                    model.Meshes[0].texture = Texture2D.GetResource("Content/Models/Skins/Panda_normal.png");
+
+                // Switch boolean
+                isNormalSkinSet = !isNormalSkinSet;
+            }
         }
 
 
@@ -70,7 +82,7 @@ namespace Examples.Tutorial
             GL.ClearColor(Color.MidnightBlue);
 
             // Load Resources
-            model = Model.GetResource("Content/Panda_oneMesh.FBX");
+            model = Model.GetResource("Content/Models/Panda_oneMesh.FBX");
             shader = Shader.GetResource(new Shader.LoadDescription("Content/simple.vert", "Content/simple.frag"));
             perObjectUniformGPUBuffer = new UniformBuffer<PerObjectUniformData>();
 
@@ -104,23 +116,23 @@ namespace Examples.Tutorial
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            perObjectUniformData.worldViewProjection = OpenTK.Matrix4.LookAt(new Vector3(0.0f, -100.0f, 0.0f), new Vector3(0.0f, 0.0f, 0.0f), Vector3.UnitZ) *
-                                                       OpenTK.Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.5f, (float)Width / Height, 0.1f, 200.0f);
+            perObjectUniformData.worldViewProjection = Matrix4.LookAt(new Vector3(0.0f, 10.0f, -20.0f), new Vector3(0.0f, 10.0f, 0.0f), Vector3.UnitY) *
+                                                       Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.5f, (float)Width / Height, 0.1f, 200.0f);
         }
 
         /// <summary>
         /// Add your game rendering code here.
         /// </summary>
-        /// <param name="e">Contains timing information.</param>
+        /// <param name="args">Contains timing information.</param>
         /// <remarks>There is no need to call the base implementation.</remarks>
-        protected override void OnRenderFrame(FrameEventArgs e)
+        protected override void OnRenderFrame(FrameEventArgs args)
         {
             // Draw to the text overlay.
             globalTextOverlay.Clear();
             globalTextOverlay.AddText("This is some test text.", new OpenTK.Vector2(5.0f), font, Brushes.Gray);
             globalTextOverlay.AddText("And some more test text here.", new OpenTK.Vector2(Width - 500, Height - 40), font, Brushes.Purple);
             globalTextOverlay.AddText("Everybody is curious about the Framerate...", new OpenTK.Vector2(5.0f, 30.0f), font, Brushes.White);
-            globalTextOverlay.AddText(String.Format("Here it is FPS: {0:0.0} ({1:0.00}ms)", 1.0f / e.Time, e.Time * 1000.0f), new OpenTK.Vector2(5.0f, 60.0f), font, Brushes.White);
+            globalTextOverlay.AddText(String.Format("Here it is FPS: {0:0.0} ({1:0.00}ms)", 1.0f / args.Time, args.Time * 1000.0f), new OpenTK.Vector2(5.0f, 60.0f), font, Brushes.White);
 
             // Update uniform buffer data.
             perObjectUniformGPUBuffer.UpdateGPUData(ref perObjectUniformData);
@@ -133,13 +145,13 @@ namespace Examples.Tutorial
             // Draw a model!
             GL.UseProgram(shader.Program);              // Activate shader.
             perObjectUniformGPUBuffer.BindBuffer(0);    // Set "perObject" uniform buffer to binding point 0.
-            model.Draw();       // Actual drawing! (does also some stuff internally upfront ;))
+            model.Draw();       // Actual drawing! (also does some stuff internally upfront ;))
 
             // Draw text overlay.
             globalTextOverlay.Draw();
 
             // Swap back and front buffer (=display sth.!).
-            this.SwapBuffers();
+            SwapBuffers();
         }
 
 
