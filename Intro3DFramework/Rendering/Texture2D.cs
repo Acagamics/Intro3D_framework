@@ -49,17 +49,17 @@ namespace Intro3DFramework.Rendering
                 this.generateMipMaps = generateMipMaps;
             }
 
-            public bool Equals(ResourceSystem.IResourceDescription other)
+            public override bool Equals(object other)
             {
                 LoadDescription? otherDesc = other as LoadDescription?;
                 return otherDesc.HasValue &&
-                       filename == otherDesc.Value.filename &&
+                       Path.GetFullPath(filename) == Path.GetFullPath(otherDesc.Value.filename) &&
                        generateMipMaps == otherDesc.Value.generateMipMaps;
             }
 
             public override int GetHashCode()
             {
-                return filename.GetHashCode() * (generateMipMaps ? 2 : 1);
+                return Path.GetFullPath(filename).GetHashCode() * (generateMipMaps ? 2 : 1);
             }
 
             public string filename;

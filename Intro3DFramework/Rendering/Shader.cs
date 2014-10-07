@@ -50,6 +50,29 @@ namespace Intro3DFramework.Rendering
                 this.fragmentShader = fragmentShader;
             }
 
+            public override bool Equals(object other)
+            {
+                LoadDescription? otherDesc = other as LoadDescription?;
+                if (type == LoadType.FILE)
+                {
+                    return otherDesc.HasValue &&
+                       Path.GetFullPath(vertexShader) == Path.GetFullPath(otherDesc.Value.vertexShader) &&
+                       Path.GetFullPath(fragmentShader) == Path.GetFullPath(otherDesc.Value.fragmentShader);
+                }
+                else
+                    return otherDesc.HasValue &&
+                       vertexShader == otherDesc.Value.vertexShader &&
+                       fragmentShader == otherDesc.Value.fragmentShader;
+            }
+
+            public override int GetHashCode()
+            {
+                if(type == LoadType.FILE)
+                    return Path.GetFullPath(vertexShader).GetHashCode() + Path.GetFullPath(fragmentShader).GetHashCode();
+                else
+                    return vertexShader.GetHashCode() + fragmentShader.GetHashCode();
+            }
+
             public LoadType type;
             public string vertexShader;
             public string fragmentShader;

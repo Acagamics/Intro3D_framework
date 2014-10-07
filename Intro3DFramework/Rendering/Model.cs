@@ -12,9 +12,13 @@ namespace Intro3DFramework.Rendering
     /// </summary>
     public class Model : ResourceSystem.BaseResource<Model, Model.LoadDescription>
     {
+        public int VertexBuffer { get { return vertexBuffer; } }
         private int vertexBuffer = -1;
+
+        public int IndexBuffer { get { return indexBuffer; } }
         private int indexBuffer = -1;
 
+        public bool Using32BitIndices { get { return using32BitIndices; } }
         private bool using32BitIndices = false;
 
         /// <summary>
@@ -113,9 +117,16 @@ namespace Intro3DFramework.Rendering
                                               Assimp.PostProcessSteps.ImproveCacheLocality;
             }
 
+            public override bool Equals(object other)
+            {
+                LoadDescription? otherDesc = other as LoadDescription?;
+                return otherDesc.HasValue &&
+                       Path.GetFullPath(filename) == Path.GetFullPath(otherDesc.Value.filename);
+            }
+
             public override int GetHashCode()
             {
-                return filename.GetHashCode();
+                return Path.GetFullPath(filename).GetHashCode();
             }
 
             public string filename;
@@ -184,15 +195,17 @@ namespace Intro3DFramework.Rendering
                 Meshes[meshIdx].startIndex = (int)NumTriangles * 3;
                 Meshes[meshIdx].numIndices = scene.Meshes[meshIdx].FaceCount * 3;
                 Meshes[meshIdx].material = scene.Materials[scene.Meshes[meshIdx].MaterialIndex];
-                try
+                if (Meshes[meshIdx].material.TextureDiffuse.FilePath != null)
                 {
-                    Meshes[meshIdx].texture = Texture2D.GetResource(Path.Combine(modelDirectory, Meshes[meshIdx].material.TextureDiffuse.FilePath));
+                    try
+                    {
+                        Meshes[meshIdx].texture = Texture2D.GetResource(Path.Combine(modelDirectory, Meshes[meshIdx].material.TextureDiffuse.FilePath));
+                    }
+                    catch (ResourceException e)
+                    {
+                        System.Diagnostics.Debug.WriteLine(e.Message);
+                    }
                 }
-                catch(ResourceException e)
-                {
-                    System.Diagnostics.Debug.WriteLine(e.Message);
-                }
-
 
                 NumVertices += (uint)scene.Meshes[meshIdx].VertexCount;
                 NumTriangles += (uint)scene.Meshes[meshIdx].FaceCount;
@@ -340,6 +353,7 @@ namespace Intro3DFramework.Rendering
 
         public void Draw()
         {
+            // Assert the object exists and is valid.
             System.Diagnostics.Debug.Assert(!disposed && vertexBuffer > 0 && indexBuffer > 0);
 
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
