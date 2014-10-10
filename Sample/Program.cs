@@ -11,6 +11,8 @@ namespace Examples.Tutorial
 {
     public class SimpleWindow : GameWindow
     {
+        private float totalTime = 0;
+
         private Model model;
         private Shader shader;
         private bool isNormalSkinSet = true;
@@ -116,8 +118,21 @@ namespace Examples.Tutorial
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnUpdateFrame(FrameEventArgs e)
         {
-            perObjectUniformData.worldViewProjection = Matrix4.LookAt(new Vector3(0.0f, 10.0f, -20.0f), new Vector3(0.0f, 10.0f, 0.0f), Vector3.UnitY) *
-                                                       Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.5f, (float)Width / Height, 0.1f, 200.0f);
+            // Update the time.
+            totalTime += (float)e.Time;
+
+            // The transformation of all world objects (currently, the Panda only).
+            Matrix4 world = Matrix4.Translation(Vector3.Zero);
+
+            // "The camera" - position, look at position (point the camera is focused on) and the up-direction.
+            Matrix4 view = Matrix4.LookAt(new Vector3(0.0f, 10.0f, -20.0f), new Vector3(0.0f, 10.0f, 0.0f), Vector3.UnitY);
+
+            // "The lens" - defines the opening angle of the camera.
+            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.5f, (float)Width / Height, 0.1f, 200.0f);
+
+            // Everything together.
+            perObjectUniformData.worldViewProjection = world * view * projection;
+                                                       
         }
 
         /// <summary>

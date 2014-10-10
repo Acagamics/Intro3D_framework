@@ -76,37 +76,37 @@ namespace Intro3DFramework.Rendering
 
         internal override void Load(Texture2D.LoadDescription description)
         {
-            Bitmap bmp;
             try
             {
-                bmp = new Bitmap(description.filename);
+                using (var bmp = new Bitmap(description.filename))
+                {
+                    Width = bmp.Width;
+                    Height = bmp.Height;
+
+                    BitmapData bmpData;
+                    try
+                    {
+                        bmpData = bmp.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
+                    }
+                    catch (System.Exception e)
+                    {
+                        throw new ResourceSystem.ResourceException(ResourceSystem.ResourceException.Type.LOAD_ERROR, "Couldn't read from texture \"" + description.filename + "\"!", e);
+                    }
+
+                    // Create and bind texture.
+                    texture = GL.GenTexture();
+                    GL.BindTexture(TextureTarget.Texture2D, texture);
+
+                    // Fill with data.
+                    GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, Width, Height, 0,
+                                    OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmpData.Scan0);
+                    bmp.UnlockBits(bmpData);
+                }
             }
-            catch(System.IO.FileNotFoundException e)
+            catch (System.IO.FileNotFoundException e)
             {
                 throw new ResourceSystem.ResourceException(ResourceSystem.ResourceException.Type.NOT_FOUND, "Texture file \"" + description.filename + "\" was not found!", e);
             }
-            Width = bmp.Width;
-            Height = bmp.Height;
-
-            BitmapData bmpData;
-            try
-            {
-                bmpData = bmp.LockBits(new Rectangle(0, 0, Width, Height), ImageLockMode.ReadOnly, System.Drawing.Imaging.PixelFormat.Format32bppArgb);
-            }
-            catch(System.Exception e)
-            {
-                throw new ResourceSystem.ResourceException(ResourceSystem.ResourceException.Type.LOAD_ERROR, "Couldn't read from texture \"" + description.filename + "\"!", e);
-            }
-
-            // Create and bind texture.
-            texture = GL.GenTexture();
-            GL.BindTexture(TextureTarget.Texture2D, texture);
-
-            // Fill with data.
-            GL.TexImage2D(TextureTarget.Texture2D, 0, PixelInternalFormat.Rgba, Width, Height, 0,
-                            OpenTK.Graphics.OpenGL.PixelFormat.Bgra, PixelType.UnsignedByte, bmpData.Scan0);
-            bmp.UnlockBits(bmpData);
-
 
             // Create mip maps on demand
             if (description.generateMipMaps)

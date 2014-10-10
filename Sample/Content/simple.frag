@@ -8,7 +8,7 @@ in vec2 Texcoord;
 
 out vec4 OutputColor;
 
-const vec3 GlobalLightDirection = vec3(0.333, -0.333, 0.333);
+const vec3 GlobalLightDirection = vec3(0.577, 0.577, -0.577);
 const float Ambient = 0.2f;
 
 void main()  
