@@ -148,6 +148,7 @@ namespace Intro3DFramework.Rendering
         internal override void Load(Model.LoadDescription description)
         {
             string modelDirectory = Path.GetDirectoryName(description.filename);
+            modelDirectory = modelDirectory.Replace('\\', '/'); // For our Unix friends :)
 
             Assimp.Scene scene;
             using (Assimp.AssimpContext importer = new Assimp.AssimpContext())
@@ -199,7 +200,9 @@ namespace Intro3DFramework.Rendering
                 {
                     try
                     {
-                        Meshes[meshIdx].texture = Texture2D.GetResource(Path.Combine(modelDirectory, Meshes[meshIdx].material.TextureDiffuse.FilePath));
+                        string texturePath = Path.Combine(modelDirectory, Meshes[meshIdx].material.TextureDiffuse.FilePath);
+                        texturePath = texturePath.Replace('\\', '/'); // For our Unix friends :)
+                        Meshes[meshIdx].texture = Texture2D.GetResource(texturePath);
                     }
                     catch (ResourceException e)
                     {
