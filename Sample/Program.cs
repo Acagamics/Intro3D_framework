@@ -17,6 +17,12 @@ namespace Examples.Tutorial
         private Shader shader;
         private bool isNormalSkinSet = true;
 
+        private Sample.Quad2D quad;
+        private Shader quadShader;
+
+        private Sample.Terrain terrain;
+        private Shader terrainShader;
+
         [StructLayout(LayoutKind.Sequential)]
         struct PerObjectUniformData
         {
@@ -86,6 +92,16 @@ namespace Examples.Tutorial
             // Load Resources
             model = Model.GetResource("Content/Models/Panda_oneMesh.FBX");
             shader = Shader.GetResource(new Shader.LoadDescription("Content/simple.vert", "Content/simple.frag"));
+
+            // Sample
+            quad = new Sample.Quad2D(new Vector2(0, 1), new Vector2(1, 0));
+            quadShader = Shader.GetResource(new Shader.LoadDescription("Content/simple2D.vert", "Content/simple2D.frag"));
+            quad.Texture = Texture2D.GetResource("Content/Models/Texture/quad.png");
+
+            terrain = new Sample.Terrain(80, 80, 0.5f);
+            terrainShader = Shader.GetResource(new Shader.LoadDescription("Content/simpleTerrain.vert", "Content/simpleTerrain.frag"));
+            terrain.Texture = Texture2D.GetResource("Content/Models/Texture/Ground0.png");
+
             perObjectUniformGPUBuffer = new UniformBuffer<PerObjectUniformData>();
 
             font = new Font(FontFamily.GenericSansSerif, 15.0f);
@@ -161,6 +177,14 @@ namespace Examples.Tutorial
             GL.UseProgram(shader.Program);              // Activate shader.
             perObjectUniformGPUBuffer.BindBuffer(0);    // Set "perObject" uniform buffer to binding point 0.
             model.Draw();       // Actual drawing! (also does some stuff internally upfront ;))
+
+            // Draw a quad!
+            GL.UseProgram(quadShader.Program);              // Activate shader.
+            quad.Draw();       // Actual drawing!
+
+            // Draw a terrain!
+            GL.UseProgram(terrainShader.Program);              // Activate shader.
+            terrain.Draw();       // Actual drawing!
 
             // Draw text overlay.
             globalTextOverlay.Draw();

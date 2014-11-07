@@ -35,6 +35,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <Compile Include="Quad2D.cs" />
+    <Compile Include="Terrain.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="OpenTK, Version=1.1.0.0, Culture=neutral, PublicKeyToken=bad199fe84eb3df4, processorArchitecture=MSIL">
@@ -47,6 +49,10 @@
     <None Include="app.config" />
     <None Include="Content\simple.frag" />
     <None Include="Content\simple.vert" />
+    <None Include="Content\simpleTerrain.frag" />
+    <None Include="Content\simpleTerrain.vert" />
+    <None Include="Content\simple2D.frag" />
+    <None Include="Content\simple2D.vert" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
