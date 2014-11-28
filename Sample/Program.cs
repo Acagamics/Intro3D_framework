@@ -27,7 +27,10 @@ namespace Examples.Tutorial
         struct PerObjectUniformData
         {
             public OpenTK.Matrix4 worldViewProjection;
+            public float time;
+            public Vector3 padding;
         }
+
         private PerObjectUniformData perObjectUniformData;
         private UniformBuffer<PerObjectUniformData> perObjectUniformGPUBuffer;
 
@@ -106,8 +109,6 @@ namespace Examples.Tutorial
 
             font = new Font(FontFamily.GenericSansSerif, 15.0f);
 
-
-
             // OpenTK sets the update frequency by default to 30hz while rendering as fast as possible - which is 60hz at max for most screens (with activated V-Sync).
             // Since this can be rather confusing and lead to not-so-smooth animations, we set the target update frequency to 60hz
             TargetUpdateFrequency = 60.0f;
@@ -137,18 +138,7 @@ namespace Examples.Tutorial
             // Update the time.
             totalTime += (float)e.Time;
 
-            // The transformation of all world objects (currently, the Panda only).
-            Matrix4 world = Matrix4.Translation(Vector3.Zero);
-
-            // "The camera" - position, look at position (point the camera is focused on) and the up-direction.
-            Matrix4 view = Matrix4.LookAt(new Vector3(0.0f, 10.0f, -20.0f), new Vector3(0.0f, 10.0f, 0.0f), Vector3.UnitY);
-
-            // "The lens" - defines the opening angle of the camera.
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.5f, (float)Width / Height, 0.1f, 200.0f);
-
-            // Everything together.
-            perObjectUniformData.worldViewProjection = world * view * projection;
-                                                       
+            perObjectUniformData.time = totalTime; // This is not really per object, but it's the only uniform buffer we have atm.
         }
 
         /// <summary>
@@ -158,6 +148,14 @@ namespace Examples.Tutorial
         /// <remarks>There is no need to call the base implementation.</remarks>
         protected override void OnRenderFrame(FrameEventArgs args)
         {
+            // TODO: Camera class
+                // "The camera" - position, look at position (point the camera is focused on) and the up-direction.
+            Matrix4 view = Matrix4.LookAt(new Vector3(0.0f, 10.0f, -20.0f), new Vector3(0.0f, 10.0f, 0.0f), Vector3.UnitY);
+                // "The lens" - defines the opening angle of the camera.
+            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.5f, (float)Width / Height, 0.1f, 200.0f);
+                // The combination of both.
+            Matrix4 viewProjection = view * projection;
+
             // Draw to the text overlay.
             globalTextOverlay.Clear();
             globalTextOverlay.AddText("This is some test text.", new OpenTK.Vector2(5.0f), font, Brushes.Gray);
@@ -165,22 +163,31 @@ namespace Examples.Tutorial
             globalTextOverlay.AddText("Everybody is curious about the Framerate...", new OpenTK.Vector2(5.0f, 30.0f), font, Brushes.White);
             globalTextOverlay.AddText(String.Format("Here it is FPS: {0:0.0} ({1:0.00}ms)", 1.0f / args.Time, args.Time * 1000.0f), new OpenTK.Vector2(5.0f, 60.0f), font, Brushes.White);
 
-            // Update uniform buffer data.
-            perObjectUniformGPUBuffer.UpdateGPUData(ref perObjectUniformData);
-
-
-
             // Clear both color and depth buffer.
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             // Draw a model!
             GL.UseProgram(shader.Program);              // Activate shader.
             perObjectUniformGPUBuffer.BindBuffer(0);    // Set "perObject" uniform buffer to binding point 0.
-            model.Draw();       // Actual drawing! (also does some stuff internally upfront ;))
 
+            for (int i = 0; i < 10; ++i)
+            {
+                for (int j = 0; j < 10; ++j)
+                {
+                    perObjectUniformData.worldViewProjection = Matrix4.CreateTranslation(i * 10 - 50, 0, j * 10) * viewProjection;
+                    perObjectUniformGPUBuffer.UpdateGPUData(ref perObjectUniformData);
+
+                    model.Draw();       // Actual drawing! (also does some stuff internally upfront ;))
+                }
+            }
+
+            // Update uniform buffer data.
+            perObjectUniformData.worldViewProjection = viewProjection;
+            perObjectUniformGPUBuffer.UpdateGPUData(ref perObjectUniformData);
+            
             // Draw a quad!
-            GL.UseProgram(quadShader.Program);              // Activate shader.
-            quad.Draw();       // Actual drawing!
+            //GL.UseProgram(quadShader.Program);              // Activate shader.
+            //quad.Draw();       // Actual drawing!
 
             // Draw a terrain!
             GL.UseProgram(terrainShader.Program);              // Activate shader.

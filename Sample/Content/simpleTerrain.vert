@@ -3,6 +3,7 @@
 layout(std140) uniform PerObject
 {
   mat4 WorldViewProjection;
+  float Time;
 };
 
 // Vertex input.

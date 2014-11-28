@@ -9,6 +9,6 @@ in float Height;
 out vec4 OutputColor;
 
 void main()  
-{     
-  OutputColor = (Height*0.25+0.5) * vec4(0.0, 0.0, 1.0, 1.0);//texture(DiffuseTexture, Texcoord*10.0);  
+{ 
+  OutputColor = (Height*0.25+0.5)*2.0 * texture(DiffuseTexture, Texcoord*10.0) + (Height*0.25)*2.0 * vec4(1,1,1,1);  
 }

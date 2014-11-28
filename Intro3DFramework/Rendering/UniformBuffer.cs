@@ -14,6 +14,8 @@ namespace Intro3DFramework.Rendering
 
         private int uniformBuffer = -1;
 
+        private static object[] activeSlotBindings = new object[16];
+
         /// <summary>
         /// Empty constructor, only for creation from file via ResourceManager.
         /// TODO: Version with initial data?
@@ -39,8 +41,20 @@ namespace Intro3DFramework.Rendering
             System.Diagnostics.Debug.Assert(offsetInBytes < SizeInBytes, "Invalid offset, needs to be smaller than the size of the uniform buffer.");
             System.Diagnostics.Debug.Assert(sizeToReplaceInBytes + offsetInBytes <= SizeInBytes, "Invalid data update size. Offset + updated size need to be smaller or equal than the buffer size!");
 
+            for (int i = 0; i < activeSlotBindings.Length; ++i)
+            {
+                if(activeSlotBindings[i] == this)
+                    GL.BindBufferRange(BufferRangeTarget.UniformBuffer, i, 0, (IntPtr)0, (IntPtr)0);
+            }
+
             GL.BindBuffer(BufferTarget.UniformBuffer, uniformBuffer);
             GL.BufferSubData<DataBlock>(BufferTarget.UniformBuffer, (IntPtr)offsetInBytes, (IntPtr)sizeToReplaceInBytes, ref newData);
+
+            for (int i = 0; i < activeSlotBindings.Length; ++i)
+            {
+                if (activeSlotBindings[i] == this)
+                    GL.BindBufferRange(BufferRangeTarget.UniformBuffer, i, uniformBuffer, (IntPtr)0, (IntPtr)SizeInBytes);
+            }
         }
 
         /// <summary>
@@ -49,6 +63,10 @@ namespace Intro3DFramework.Rendering
         /// <remarks>Does NOT take care about redundant binding operations!</remarks>
         public void BindBuffer(int bindingPointIndex)
         {
+            if (activeSlotBindings[bindingPointIndex] == this) 
+                return;
+
+            activeSlotBindings[bindingPointIndex] = this;
             GL.BindBufferRange(BufferRangeTarget.UniformBuffer, bindingPointIndex, uniformBuffer, (IntPtr)0, (IntPtr)SizeInBytes);
         }
 
