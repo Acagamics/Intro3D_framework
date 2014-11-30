@@ -36,6 +36,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Quad2D.cs" />
+    <Compile Include="Skybox.cs" />
     <Compile Include="Terrain.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -53,6 +54,8 @@
     <None Include="Content\simpleTerrain.vert" />
     <None Include="Content\simple2D.frag" />
     <None Include="Content\simple2D.vert" />
+    <None Include="Content\skybox.frag" />
+    <None Include="Content\skybox.vert" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

@@ -21,14 +21,15 @@ namespace Examples.Tutorial
         private Shader quadShader;
 
         private Sample.Terrain terrain;
+        private Sample.Skybox skybox;
         private Shader terrainShader;
 
         [StructLayout(LayoutKind.Sequential)]
         struct PerObjectUniformData
         {
             public OpenTK.Matrix4 worldViewProjection;
+            public Vector3 cameraPosition;
             public float time;
-            public Vector3 padding;
         }
 
         private PerObjectUniformData perObjectUniformData;
@@ -105,6 +106,14 @@ namespace Examples.Tutorial
             terrainShader = Shader.GetResource(new Shader.LoadDescription("Content/simpleTerrain.vert", "Content/simpleTerrain.frag"));
             terrain.Texture = Texture2D.GetResource("Content/Models/Texture/Ground0.png");
 
+            skybox = new Sample.Skybox(new TextureCube.LoadDescription("Content/Skybox/posx.jpg",
+                                                                       "Content/Skybox/negx.jpg",
+                                                                       "Content/Skybox/posy.jpg",
+                                                                       "Content/Skybox/negy.jpg",
+                                                                       "Content/Skybox/posz.jpg",
+                                                                       "Content/Skybox/negz.jpg"),
+                                        new Shader.LoadDescription("Content/skybox.vert", "Content/skybox.frag"));
+
             perObjectUniformGPUBuffer = new UniformBuffer<PerObjectUniformData>();
 
             font = new Font(FontFamily.GenericSansSerif, 15.0f);
@@ -150,9 +159,12 @@ namespace Examples.Tutorial
         {
             // TODO: Camera class
                 // "The camera" - position, look at position (point the camera is focused on) and the up-direction.
-            Matrix4 view = Matrix4.LookAt(new Vector3(0.0f, 10.0f, -20.0f), new Vector3(0.0f, 10.0f, 0.0f), Vector3.UnitY);
+            const float camRotationSpeed = 0.5f;
+            perObjectUniformData.cameraPosition = new Vector3(0.0f, 10.0f, -70.0f);
+            Matrix4 view = Matrix4.LookAt(perObjectUniformData.cameraPosition,
+                    perObjectUniformData.cameraPosition + new Vector3((float)Math.Sin(totalTime * camRotationSpeed) * 10.0f, 0, (float)Math.Cos(totalTime * camRotationSpeed) * 10.0f), Vector3.UnitY);
                 // "The lens" - defines the opening angle of the camera.
-            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.5f, (float)Width / Height, 0.1f, 200.0f);
+            Matrix4 projection = Matrix4.CreatePerspectiveFieldOfView((float)Math.PI * 0.35f, (float)Width / Height, 0.1f, 200.0f);
                 // The combination of both.
             Matrix4 viewProjection = view * projection;
 
@@ -165,6 +177,11 @@ namespace Examples.Tutorial
 
             // Clear both color and depth buffer.
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
+
+
+            // Enable backface culling
+            GL.Enable(EnableCap.CullFace);
+            GL.CullFace(CullFaceMode.Back);
 
             // Draw a model!
             GL.UseProgram(shader.Program);              // Activate shader.
@@ -193,8 +210,13 @@ namespace Examples.Tutorial
             GL.UseProgram(terrainShader.Program);              // Activate shader.
             terrain.Draw();       // Actual drawing!
 
+            // Draw a skybox for the background.
+            perObjectUniformData.worldViewProjection = viewProjection;
+            perObjectUniformGPUBuffer.UpdateGPUData(ref perObjectUniformData);
+            skybox.Draw();
+
             // Draw text overlay.
-            globalTextOverlay.Draw();
+          //  globalTextOverlay.Draw();
 
             // Swap back and front buffer (=display sth.!).
             SwapBuffers();
