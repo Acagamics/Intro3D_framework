@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.21005.1
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sample", "Sample\Sample.csproj", "{C6CFB2BF-A36A-4BD2-BCB9-F4B1C51CADB0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Intro3DFramework", "Intro3DFramework\Intro3DFramework.csproj", "{02A50AC2-A026-4F12-B3C9-96C1EC2CE3E3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PackmanSample", "PacmanSample\PackmanSample.csproj", "{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +39,16 @@ Global
 		{02A50AC2-A026-4F12-B3C9-96C1EC2CE3E3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{02A50AC2-A026-4F12-B3C9-96C1EC2CE3E3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{02A50AC2-A026-4F12-B3C9-96C1EC2CE3E3}.Release|x86.ActiveCfg = Release|Any CPU
+		{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}.Debug|x86.ActiveCfg = Debug|x86
+		{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}.Debug|x86.Build.0 = Debug|x86
+		{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}.Release|Any CPU.ActiveCfg = Release|x86
+		{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}.Release|Mixed Platforms.Build.0 = Release|x86
+		{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}.Release|x86.ActiveCfg = Release|x86
+		{DD2DC364-9A16-4DE1-A1E0-BFE0CFD532F2}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
