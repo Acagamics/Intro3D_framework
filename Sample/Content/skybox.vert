@@ -13,6 +13,6 @@ out vec3 Texcoord;
 void main(void)
 {
   gl_Position = WorldViewProjection * vec4(inPosition+CameraPosition, 1.0);
-  gl_Position.z = gl_Position.w-0.00001;
+  gl_Position.z = gl_Position.w-0.0001;
   Texcoord = inPosition;
 }
