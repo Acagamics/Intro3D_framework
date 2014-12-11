@@ -23,6 +23,6 @@ void main(void)
   gl_Position = ViewProjection * (World * vec4(inPosition, 1.0));
 
   // Simple pass through
-  Normal = inNormal;
+  Normal = (World * vec4(inNormal, 0)).xyz;
   Texcoord = inTexcoord;
 }  

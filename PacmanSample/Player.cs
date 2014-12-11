@@ -58,13 +58,25 @@ namespace Sample
         {
             Vector2 nextPosition = position;
             if (Keyboard.GetState().IsKeyDown(Key.Up) || Keyboard.GetState().IsKeyDown(Key.W))
+            {
                 nextPosition.Y += moveSpeed * timeSinceLastFrame;
+                viewDir = Vector2.UnitY;
+            }
             if (Keyboard.GetState().IsKeyDown(Key.Down) || Keyboard.GetState().IsKeyDown(Key.S))
+            {
                 nextPosition.Y -= moveSpeed * timeSinceLastFrame;
+                viewDir = -Vector2.UnitY;
+            }
             if (Keyboard.GetState().IsKeyDown(Key.Left) || Keyboard.GetState().IsKeyDown(Key.A))
+            {
                 nextPosition.X += moveSpeed * timeSinceLastFrame;
+                viewDir = Vector2.UnitX;
+            }
             if (Keyboard.GetState().IsKeyDown(Key.Right) || Keyboard.GetState().IsKeyDown(Key.D))
+            {
                 nextPosition.X -= moveSpeed * timeSinceLastFrame;
+                viewDir = -Vector2.UnitX;
+            }
 
             // Check if we would now touch a non walkable field
             int gatheredCoins;
@@ -74,7 +86,7 @@ namespace Sample
                 score += gatheredCoins;
             }
 
-            uniformData.world =// Matrix4.CreateRotationY((float)Math.Acos(Vector2.Dot(viewDir, Vector2.UnitX))) * 
+            uniformData.world = Matrix4.CreateRotationY((float)Math.Acos(Vector2.Dot(viewDir, Vector2.UnitX))) * 
                                 Matrix4.CreateTranslation(position.X, 0, position.Y);
             uniformGPUBuffer.UpdateGPUData(ref uniformData);
         }
