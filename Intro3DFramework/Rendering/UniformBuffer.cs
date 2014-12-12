@@ -44,7 +44,7 @@ namespace Intro3DFramework.Rendering
             for (int i = 0; i < activeSlotBindings.Length; ++i)
             {
                 if(activeSlotBindings[i] == this)
-                    GL.BindBufferRange(BufferRangeTarget.UniformBuffer, i, 0, (IntPtr)0, (IntPtr)0);
+                    GL.BindBufferBase(BufferRangeTarget.UniformBuffer, i, 0);
             }
 
             GL.BindBuffer(BufferTarget.UniformBuffer, uniformBuffer);
@@ -53,7 +53,7 @@ namespace Intro3DFramework.Rendering
             for (int i = 0; i < activeSlotBindings.Length; ++i)
             {
                 if (activeSlotBindings[i] == this)
-                    GL.BindBufferRange(BufferRangeTarget.UniformBuffer, i, uniformBuffer, (IntPtr)0, (IntPtr)SizeInBytes);
+                    GL.BindBufferBase(BufferRangeTarget.UniformBuffer, i, uniformBuffer);
             }
         }
 
@@ -67,7 +67,7 @@ namespace Intro3DFramework.Rendering
                 return;
 
             activeSlotBindings[bindingPointIndex] = this;
-            GL.BindBufferRange(BufferRangeTarget.UniformBuffer, bindingPointIndex, uniformBuffer, (IntPtr)0, (IntPtr)SizeInBytes);
+            GL.BindBufferBase(BufferRangeTarget.UniformBuffer, bindingPointIndex, uniformBuffer);
         }
 
         #region Disposing
