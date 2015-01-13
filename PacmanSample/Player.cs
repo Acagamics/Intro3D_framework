@@ -94,6 +94,7 @@ namespace Sample
         public void Render()
         {
             GL.UseProgram(shader.Program);
+            
             uniformGPUBuffer.BindBuffer(1);
             
             model.Draw();
