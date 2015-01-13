@@ -37,6 +37,7 @@ namespace BillboardSample
 
         private Vector3 camX;
         private Vector3 camY;
+        private Vector3 camPos;
 
         private bool beginWasCalled = false;
 
@@ -74,20 +75,20 @@ namespace BillboardSample
         /// You need to re-add all sprites every time the camera changes its orientation.
         /// </summary>
         /// <param name="cameraMatrix"></param>
-        public void Begin(Matrix4 cameraMatrix)
+        public void Begin(Matrix4 cameraMatrix, Vector3 cameraPosition)
         {
             NumBillboards = 0;
             beginWasCalled = true;
 
-            // cameraMatrix.Right/Up are wrong!
             camX = new Vector3(cameraMatrix.M11, cameraMatrix.M21, cameraMatrix.M31);
             camY = new Vector3(cameraMatrix.M12, cameraMatrix.M22, cameraMatrix.M32);
+            camPos = cameraPosition;
         }
 
         /// <summary>
         /// Adds a billboard and orientates it properly
         /// </summary>
-        public void AddBillboard(Vector3 position, Vector4 color, float size, Vector2 texTopLeft, Vector2 texBottomRight)
+        public void AddBillboard(Vector3 position, Vector4 color, float size, Vector2 texTopLeft, Vector2 texBottomRight, bool vieplaneOriented = true)
         {
             if (billboardVertices.Length == NumBillboards)
                 throw new Exception("Maximum number of billboards is too small - can't add more billboards!");
@@ -95,25 +96,35 @@ namespace BillboardSample
 
             // need half size all the time
             size *= 0.5f;
-            Vector3 camXScaled = camX * size;
-            Vector3 camYScaled = camY * size;
+            Vector3 xAxis, yAxis;
+            if (vieplaneOriented)
+            {
+                xAxis = camX * size;
+                yAxis = camY * size;
+            }
+            else
+            {
+                Vector3 zAxis = Vector3.Normalize(camPos - position);
+                xAxis = Vector3.Cross(zAxis, Vector3.UnitY);
+                yAxis = Vector3.Cross(xAxis, zAxis);
+            }
 
             // computes edge positions
-            billboardVertices[NumBillboards * 6].Position = position - camXScaled - camYScaled;
+            billboardVertices[NumBillboards * 6].Position = position - xAxis - yAxis;
             billboardVertices[NumBillboards * 6].Texcoord = texTopLeft;
             billboardVertices[NumBillboards * 6].Color = color;
 
-            billboardVertices[NumBillboards * 6 + 1].Position = position + camXScaled - camYScaled;
+            billboardVertices[NumBillboards * 6 + 1].Position = position + xAxis - yAxis;
             billboardVertices[NumBillboards * 6 + 1].Texcoord = new Vector2(texBottomRight.X, texTopLeft.Y);
             billboardVertices[NumBillboards * 6 + 1].Color = color;
 
-            billboardVertices[NumBillboards * 6 + 2].Position = position - camXScaled + camYScaled;
+            billboardVertices[NumBillboards * 6 + 2].Position = position - xAxis + yAxis;
             billboardVertices[NumBillboards * 6 + 2].Texcoord = new Vector2(texTopLeft.X, texBottomRight.Y);
             billboardVertices[NumBillboards * 6 + 2].Color = color;
 
             billboardVertices[NumBillboards * 6 + 3] = billboardVertices[NumBillboards * 6 + 1];
 
-            billboardVertices[NumBillboards * 6 + 4].Position = position + camXScaled + camYScaled;
+            billboardVertices[NumBillboards * 6 + 4].Position = position + xAxis + yAxis;
             billboardVertices[NumBillboards * 6 + 4].Texcoord = texBottomRight;
             billboardVertices[NumBillboards * 6 + 4].Color = color;
 

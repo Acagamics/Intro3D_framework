@@ -55,9 +55,9 @@ namespace BillboardSample
 
         // movement factors variables
         protected float rotationSpeed = 0.005f;
-        protected float forwardSpeed = 0.5f;
-        protected float verticalSpeed = 0.5f;
-        protected float sideSpeed = 0.5f;
+        protected float forwardSpeed = 0.1f;
+        protected float verticalSpeed = 0.1f;
+        protected float sideSpeed = 0.1f;
 
         // some intern controlling variables
         protected float phi = 0.0f;

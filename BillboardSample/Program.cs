@@ -134,8 +134,8 @@ namespace BillboardSample
             globalUniformDataGPUBuffer.BindBuffer(0);    // Set "perObject" uniform buffer to binding point 0.
 
             // Add billboards.
-            billboards.Begin(camera.ViewMatrix);
-            billboards.AddBillboard(globalUniformData.lightPosition, new Vector4(1, 1, 0.9f, 1.0f), 2.0f, Vector2.Zero, Vector2.One);
+            billboards.Begin(camera.ViewMatrix, camera.Position);
+            billboards.AddBillboard(globalUniformData.lightPosition, new Vector4(1, 1, 0.9f, 1.0f), 2.0f, Vector2.Zero, Vector2.One, false);
             billboards.End();
         }
 
