@@ -10,5 +10,5 @@ out vec4 OutputColor;
 
 void main()  
 {     
-  OutputColor = Color;  
+  OutputColor = texture(DiffuseTexture, Texcoord) * Color;  
 }

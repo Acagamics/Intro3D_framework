@@ -1,8 +1,11 @@
 #version 330
 
-layout(std140) uniform PerObject
+layout(std140) uniform GlobalUniformbuffer
 {
   mat4 WorldViewProjection;
+  vec3 LightPosition;
+  float padding;
+  vec3 LightColor;
 };
 
 // Vertex input.

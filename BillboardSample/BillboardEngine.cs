@@ -35,8 +35,6 @@ namespace BillboardSample
         private int vertexBuffer;
         private int vertexArray;
 
-        public Shader billboardShader;
-
         private Vector3 camX;
         private Vector3 camY;
 
@@ -69,10 +67,6 @@ namespace BillboardSample
             GL.EnableVertexAttribArray(2);
                 // Disable vertex array again.
             GL.BindVertexArray(0); 
-
-
-            // Load shader
-            billboardShader = Shader.GetResource(new Shader.LoadDescription("Content/billboard.vert", "Content/billboard.frag"));
         }
 
         /// <summary>
@@ -131,8 +125,7 @@ namespace BillboardSample
         public void End()
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
-            GL.BufferSubData<BillboardVertex>(BufferTarget.ArrayBuffer, IntPtr.Zero, 
-                            new IntPtr(Marshal.SizeOf(typeof(BillboardVertex)) * NumBillboards * 6), billboardVertices);
+            GL.BufferSubData<BillboardVertex>(BufferTarget.ArrayBuffer, IntPtr.Zero, new IntPtr(Marshal.SizeOf(typeof(BillboardVertex)) * NumBillboards * 6), billboardVertices);
 
             beginWasCalled = false;
         }
@@ -151,7 +144,6 @@ namespace BillboardSample
             GL.BindVertexArray(vertexArray);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
 
-            GL.UseProgram(billboardShader.Program);
             GL.DrawArrays(PrimitiveType.Triangles, 0, NumBillboards * 6);
 
 

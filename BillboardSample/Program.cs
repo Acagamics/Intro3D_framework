@@ -16,19 +16,24 @@ namespace BillboardSample
         private Camera camera;
 
         private Model model;
-        private Shader shader;
+        private Shader modelShader;
         
         private BillboardEngine billboards;
+        private Shader billboardShader;
+        private Texture2D billboardTexture;
 
         
         // Uniform buffer
         [StructLayout(LayoutKind.Sequential)]
-        struct PerObjectUniformData
+        struct UniformData
         {
-            public Matrix4 worldViewProjection;
+            public Matrix4 viewProjection;
+            public Vector3 lightPosition;
+            public float padding;
+            public Vector3 lightColor;
         }
-        private PerObjectUniformData perObjectUniformData;
-        private UniformBuffer<PerObjectUniformData> perObjectUniformGPUBuffer;
+        private UniformData globalUniformData;
+        private UniformBuffer<UniformData> globalUniformDataGPUBuffer;
 
 
 
@@ -78,14 +83,17 @@ namespace BillboardSample
 
             // Load Resources
             model = Model.GetResource("Content/Models/sibenik.obj");
-            shader = Shader.GetResource(new Shader.LoadDescription("Content/simple.vert", "Content/simple.frag"));
+            modelShader = Shader.GetResource(new Shader.LoadDescription("Content/simple.vert", "Content/simple.frag"));
 
             billboards = new BillboardEngine(5);
-            perObjectUniformGPUBuffer = new UniformBuffer<PerObjectUniformData>();
+            billboardShader = Shader.GetResource(new Shader.LoadDescription("Content/billboard.vert", "Content/billboard.frag"));
+            billboardTexture = Texture2D.GetResource("Content/glare.png");
 
+            globalUniformDataGPUBuffer = new UniformBuffer<UniformData>();
 
             camera = new FreeCamera((float)Width / Height);
             camera.Position = new Vector3(0, 0, 0);
+
 
 
             // OpenTK sets the update frequency by default to 30hz while rendering as fast as possible - which is 60hz at max for most screens (with activated V-Sync).
@@ -117,10 +125,17 @@ namespace BillboardSample
             // Update camera.
             camera.Update((float)e.Time);
 
+
+            // Update Uniforms
+            globalUniformData.viewProjection = camera.ViewMatrix * camera.ProjectionMatrix;
+            globalUniformData.lightPosition = new Vector3(8.0f, -8.0f, 0.0f);
+            globalUniformData.lightColor = new Vector3(20, 20, 18);
+            globalUniformDataGPUBuffer.UpdateGPUData(ref globalUniformData);
+            globalUniformDataGPUBuffer.BindBuffer(0);    // Set "perObject" uniform buffer to binding point 0.
+
             // Add billboards.
             billboards.Begin(camera.ViewMatrix);
-            billboards.AddBillboard(new Vector3(-50, 0, (float)Math.Sin(totalTime * 0.3) * 20), new Vector4((float)Math.Sin(totalTime), (float)Math.Sin(totalTime + 1), 1, 1), 5, Vector2.Zero, Vector2.One);
-            billboards.AddBillboard(new Vector3(-50, 0, (float)Math.Sin(totalTime * 0.3 + 2) * 20), new Vector4((float)Math.Sin(totalTime), (float)Math.Sin(totalTime + 1), 1, 1), 5, Vector2.Zero, Vector2.One);
+            billboards.AddBillboard(globalUniformData.lightPosition, new Vector4(1, 1, 0.9f, 1.0f), 2.0f, Vector2.Zero, Vector2.One);
             billboards.End();
         }
 
@@ -139,14 +154,18 @@ namespace BillboardSample
             GL.CullFace(CullFaceMode.Back);
 
             // Draw a model!
-            GL.UseProgram(shader.Program);              // Activate shader.
-            perObjectUniformData.worldViewProjection = camera.ViewMatrix * camera.ProjectionMatrix;
-            perObjectUniformGPUBuffer.UpdateGPUData(ref perObjectUniformData);
-            perObjectUniformGPUBuffer.BindBuffer(0);    // Set "perObject" uniform buffer to binding point 0.
+            GL.UseProgram(modelShader.Program);              // Activate shader.
             model.Draw();
 
             // Draw billboards!
+            GL.UseProgram(billboardShader.Program);
+            GL.BindTexture(TextureTarget.Texture2D, billboardTexture.Texture);
+            GL.Enable(EnableCap.Blend);
+            GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One);
             billboards.Draw();
+
+            // Disable blending.
+            GL.Disable(EnableCap.Blend);
 
             // Swap back and front buffer (=display sth.!).
             SwapBuffers();
