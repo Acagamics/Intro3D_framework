@@ -26,6 +26,10 @@ namespace BillboardSample
         private Shader billboardShader;
         private Texture2D billboardTexture;
 
+        private ParticleSystem particleSystem;
+        private ParticleEmitterPoint particleEmitter;
+        private Texture2D particleTexture;
+
         
         // Uniform buffer
         [StructLayout(LayoutKind.Sequential)]
@@ -87,7 +91,7 @@ namespace BillboardSample
             // Set standard OpenGL clear color.
             GL.ClearColor(Color.MidnightBlue);
 
-            // Load Resources
+            // Model/Scene
             model = Model.GetResource("Content/Models/sibenik.obj");
             whitePixTex = Texture2D.GetResource("Content/whitepix.bmp");
             for(int i=0; i<model.Meshes.Length; ++i)
@@ -97,15 +101,35 @@ namespace BillboardSample
             }
             modelShader = Shader.GetResource(new Shader.LoadDescription("Content/simple.vert", "Content/simple.frag"));
 
+            // Billboards
             billboards = new BillboardEngine(5);
             billboardShader = Shader.GetResource(new Shader.LoadDescription("Content/billboard.vert", "Content/billboard.frag"));
             billboardTexture = Texture2D.GetResource("Content/glare.png");
+
+            // Particles
+            particleTexture = Texture2D.GetResource("Content/particle.png");
+            particleSystem = new ParticleSystem(2048);
+            particleEmitter = new ParticleEmitterPoint();
+            particleEmitter.ParticlesPerSecond = 100.0f;
+            particleEmitter.TexTopLeft = Vector2.One;
+            particleEmitter.TexBottomRight = Vector2.Zero;
+            particleEmitter.StartColor = new Vector4(0.8f, 0.8f, 0.7f, 1.0f);
+            particleEmitter.StartColorVariation = new Vector4(0.5f, 0.5f, 0.5f, 1.0f);
+            particleEmitter.EndColor = new Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+            particleEmitter.EndColorVariation = new Vector4(0.0f, 0.0f, 0.0f, 0.0f);
+            particleEmitter.StartSize = 0.8f;
+            particleEmitter.StartSizeVariation = 0.2f;
+            particleEmitter.EndSize = 0.0f;
+            particleEmitter.EndSizeVariation = 0.0f;
+            particleEmitter.LifeTime = 4.0f;
+            particleEmitter.LifeTimeVariation = 1.0f;
+            particleEmitter.Velocity = 0.8f;
+            particleEmitter.VelocityVariation = 0.2f;
 
             globalUniformDataGPUBuffer = new UniformBuffer<UniformData>();
 
             camera = new FreeCamera((float)Width / Height);
             camera.Position = new Vector3(0, 0, 0);
-
 
 
             // OpenTK sets the update frequency by default to 30hz while rendering as fast as possible - which is 60hz at max for most screens (with activated V-Sync).
@@ -137,18 +161,25 @@ namespace BillboardSample
             // Update camera.
             camera.Update((float)e.Time);
 
+            // Set global light position
+            Vector3 pointLightPosition = new Vector3((float)Math.Sin(totalTime * 0.8f) * 10.0f - 2.0f, -6.0f + (float)Math.Cos(totalTime * 0.8f) * 3.0f, 0.0f);
 
             // Update Uniforms
             globalUniformData.viewProjection = camera.ViewMatrix * camera.ProjectionMatrix;
-            globalUniformData.lightPosition = new Vector3(8.0f, -8.0f, 0.0f);
-            globalUniformData.lightColor = new Vector3(20, 20, 18);
+            globalUniformData.lightPosition = pointLightPosition;
+            globalUniformData.lightColor = new Vector3(25, 25, 20);
             globalUniformDataGPUBuffer.UpdateGPUData(ref globalUniformData);
             globalUniformDataGPUBuffer.BindBuffer(0);    // Set "perObject" uniform buffer to binding point 0.
 
-            // Add billboards.
-            billboards.Begin(camera.ViewMatrix, camera.Position);
-            billboards.AddBillboard(globalUniformData.lightPosition, new Vector4(1, 1, 0.9f, 1.0f), 2.0f, Vector2.Zero, Vector2.One, false);
+            // Add a glare where the light is
+            billboards.Begin(camera);
+            billboards.AddBillboard(pointLightPosition, new Vector4(1, 1, 0.9f, 1.0f), 4.0f, Vector2.Zero, Vector2.One, false);
             billboards.End();
+
+            // Add a trail of particles to the light.
+            particleEmitter.Position = pointLightPosition;
+            particleEmitter.Emit(particleSystem, (float)e.Time);
+            particleSystem.Update((float)e.Time, camera);
         }
 
         private void OnRenderMesh(ref Model.Mesh mesh)
@@ -176,6 +207,9 @@ namespace BillboardSample
             GL.UseProgram(modelShader.Program);              // Activate shader.
             model.Draw(OnRenderMesh);
 
+            // Important: Disable depth write (but keep read)
+            GL.DepthMask(false);
+
             // Draw billboards!
             GL.UseProgram(billboardShader.Program);
             GL.BindTexture(TextureTarget.Texture2D, billboardTexture.Texture);
@@ -183,8 +217,13 @@ namespace BillboardSample
             GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One); // Additive blending.
             billboards.Draw();
 
-            // Disable blending.
+            // Draw particles (keep last blending settings)
+            GL.BindTexture(TextureTarget.Texture2D, particleTexture.Texture);
+            particleSystem.Draw();
+
+            // Disable blending and reactivate depth write.
             GL.Disable(EnableCap.Blend);
+            GL.DepthMask(true);
 
             // Swap back and front buffer (=display sth.!).
             SwapBuffers();

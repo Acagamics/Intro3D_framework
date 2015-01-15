@@ -38,6 +38,7 @@
     <Compile Include="BillboardEngine.cs" />
     <Compile Include="Camera.cs" />
     <Compile Include="FreeCamera.cs" />
+    <Compile Include="ParticleEmitter.cs" />
     <Compile Include="ParticleSystem.cs" />
     <Compile Include="Program.cs" />
   </ItemGroup>

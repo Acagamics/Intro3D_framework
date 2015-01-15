@@ -74,15 +74,14 @@ namespace BillboardSample
         /// Begin with adding new sprites.
         /// You need to re-add all sprites every time the camera changes its orientation.
         /// </summary>
-        /// <param name="cameraMatrix"></param>
-        public void Begin(Matrix4 cameraMatrix, Vector3 cameraPosition)
+        public void Begin(Camera camera)
         {
             NumBillboards = 0;
             beginWasCalled = true;
 
-            camX = new Vector3(cameraMatrix.M11, cameraMatrix.M21, cameraMatrix.M31);
-            camY = new Vector3(cameraMatrix.M12, cameraMatrix.M22, cameraMatrix.M32);
-            camPos = cameraPosition;
+            camX = new Vector3(camera.ViewMatrix.M11, camera.ViewMatrix.M21, camera.ViewMatrix.M31);
+            camY = new Vector3(camera.ViewMatrix.M12, camera.ViewMatrix.M22, camera.ViewMatrix.M32);
+            camPos = camera.Position;
         }
 
         /// <summary>
