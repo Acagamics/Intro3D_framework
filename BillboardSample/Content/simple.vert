@@ -3,9 +3,9 @@
 layout(std140) uniform GlobalUniformbuffer
 {
   mat4 WorldViewProjection;
-  vec3 LightPosition;
-  float padding;
-  vec3 LightColor;
+  vec3 LightPosition; float padding0;
+  vec3 LightColor; float padding1;
+  vec3 MaterialColor;
 };
 
 // Vertex input.

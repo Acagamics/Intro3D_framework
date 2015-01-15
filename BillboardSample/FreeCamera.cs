@@ -20,8 +20,8 @@ namespace BillboardSample
         /// <param name="fov">Field of view in the y direction, in radians.</param>
         /// <param name="nearPlane">Distance to the near view plane.</param>
         /// <param name="farPlane">Distance to the far view plane.</param>
-        public FreeCamera(float aspectRatio, float fov = 1.309f, float nearPlane = 0.1f, float farPlane = 5000.0f) :
-            base(aspectRatio, fov, nearPlane, farPlane)
+        public FreeCamera(float aspectRatio, float fovY = (float)Math.PI * 0.35f, float nearPlane = 0.1f, float farPlane = 5000.0f) :
+            base(aspectRatio, fovY, nearPlane, farPlane)
         {
         }
 
@@ -93,8 +93,8 @@ namespace BillboardSample
             //Position += forward * forwardSpeed * viewDirection;
 
             // side movement
-            float side = (Keyboard.GetState().IsKeyDown(Key.A) ? 1.0f : 0.0f) + (Keyboard.GetState().IsKeyDown(Key.Right) ? 1.0f : 0.0f) -
-                         (Keyboard.GetState().IsKeyDown(Key.D) ? 1.0f : 0.0f) - (Keyboard.GetState().IsKeyDown(Key.Left) ? 1.0f : 0.0f);
+            float side = (Keyboard.GetState().IsKeyDown(Key.A) ? 1.0f : 0.0f) + (Keyboard.GetState().IsKeyDown(Key.Left) ? 1.0f : 0.0f) -
+                         (Keyboard.GetState().IsKeyDown(Key.D) ? 1.0f : 0.0f) - (Keyboard.GetState().IsKeyDown(Key.Right) ? 1.0f : 0.0f);
 
             float vertical = (Keyboard.GetState().IsKeyDown(Key.Q) ? 1.0f : 0.0f) -
                              (Keyboard.GetState().IsKeyDown(Key.E) ? 1.0f : 0.0f);

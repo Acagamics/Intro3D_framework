@@ -354,7 +354,13 @@ namespace Intro3DFramework.Rendering
             }
         }
 
-        public void Draw()
+        /// <summary>
+        /// Callback for mesh rendering
+        /// </summary>
+        /// <param name="currentMesh">Mesh that is about to be rendered.</param>
+        public delegate void OnMeshRenderCallback(ref Mesh currentMesh);
+
+        public void Draw(OnMeshRenderCallback onRenderMesh = null)
         {
             // Assert the object exists and is valid.
             System.Diagnostics.Debug.Assert(!disposed && vertexBuffer > 0 && indexBuffer > 0);
@@ -371,7 +377,7 @@ namespace Intro3DFramework.Rendering
             GL.EnableVertexAttribArray(1);
             GL.VertexAttribPointer(2, 2, VertexAttribPointerType.Float, false, vertexSize, sizeof(float) * 6);
             GL.EnableVertexAttribArray(2);
-            if(HasTangents)
+            if (HasTangents)
             {
                 GL.VertexAttribPointer(3, 3, VertexAttribPointerType.Float, false, vertexSize, sizeof(float) * 8);
                 GL.EnableVertexAttribArray(3);
@@ -384,6 +390,9 @@ namespace Intro3DFramework.Rendering
                 else
                     GL.BindTexture(TextureTarget.Texture2D, 0);
 
+                if (onRenderMesh != null)
+                    onRenderMesh(ref Meshes[meshIdx]);
+                
                 if (using32BitIndices)
                     GL.DrawElements(PrimitiveType.Triangles, Meshes[meshIdx].numIndices, DrawElementsType.UnsignedInt, Meshes[meshIdx].startIndex * 4);
                 else

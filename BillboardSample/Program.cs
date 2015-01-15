@@ -16,6 +16,10 @@ namespace BillboardSample
         private Camera camera;
 
         private Model model;
+        /// <summary>
+        /// Replacement texture for meshes without defined texture.
+        /// </summary>
+        private Texture2D whitePixTex;
         private Shader modelShader;
         
         private BillboardEngine billboards;
@@ -29,8 +33,10 @@ namespace BillboardSample
         {
             public Matrix4 viewProjection;
             public Vector3 lightPosition;
-            public float padding;
+            public float padding0;
             public Vector3 lightColor;
+            public float padding1;
+            public Vector3 materialColor;
         }
         private UniformData globalUniformData;
         private UniformBuffer<UniformData> globalUniformDataGPUBuffer;
@@ -83,6 +89,12 @@ namespace BillboardSample
 
             // Load Resources
             model = Model.GetResource("Content/Models/sibenik.obj");
+            whitePixTex = Texture2D.GetResource("Content/whitepix.bmp");
+            for(int i=0; i<model.Meshes.Length; ++i)
+            {
+                if (model.Meshes[i].texture == null)
+                    model.Meshes[i].texture = whitePixTex;
+            }
             modelShader = Shader.GetResource(new Shader.LoadDescription("Content/simple.vert", "Content/simple.frag"));
 
             billboards = new BillboardEngine(5);
@@ -139,6 +151,12 @@ namespace BillboardSample
             billboards.End();
         }
 
+        private void OnRenderMesh(ref Model.Mesh mesh)
+        {
+            globalUniformData.materialColor = new Vector3(mesh.material.ColorDiffuse.R, mesh.material.ColorDiffuse.G, mesh.material.ColorDiffuse.B);
+            globalUniformDataGPUBuffer.UpdateGPUData(ref globalUniformData);
+        }
+
         /// <summary>
         /// Add your game rendering code here.
         /// </summary>
@@ -149,19 +167,20 @@ namespace BillboardSample
             // Clear both color and depth buffer.
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
-            // Enable backface culling
+            // Enable backface culling#
             GL.Enable(EnableCap.CullFace);
             GL.CullFace(CullFaceMode.Back);
 
             // Draw a model!
+            GL.BlendFunc(BlendingFactorSrc.SrcAlpha, BlendingFactorDest.OneMinusSrcAlpha); // Classic alpha blending
             GL.UseProgram(modelShader.Program);              // Activate shader.
-            model.Draw();
+            model.Draw(OnRenderMesh);
 
             // Draw billboards!
             GL.UseProgram(billboardShader.Program);
             GL.BindTexture(TextureTarget.Texture2D, billboardTexture.Texture);
             GL.Enable(EnableCap.Blend);
-            GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One);
+            GL.BlendFunc(BlendingFactorSrc.One, BlendingFactorDest.One); // Additive blending.
             billboards.Draw();
 
             // Disable blending.

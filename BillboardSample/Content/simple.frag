@@ -5,9 +5,9 @@ uniform sampler2D DiffuseTexture;
 layout(std140) uniform GlobalUniformbuffer
 {
   mat4 WorldViewProjection;
-  vec3 LightPosition;
-  float padding;
-  vec3 LightColor;
+  vec3 LightPosition; float padding0;
+  vec3 LightColor; float padding1;
+  vec3 MaterialColor;
 };
 
 // Input = output from vertex shader.
@@ -27,6 +27,6 @@ void main()
 
   float lighting = clamp(dot(Normal, toLight), Ambient, 1.0) / lightDistSq;
 
-  vec3 textureColor = texture(DiffuseTexture, Texcoord).rgb;
-  OutputColor = vec4(textureColor * lighting * LightColor, 1.0);  
+  vec3 diffuseColor = texture(DiffuseTexture, Texcoord).rgb * MaterialColor;
+  OutputColor = vec4(diffuseColor * lighting * LightColor, 1.0);  
 }
