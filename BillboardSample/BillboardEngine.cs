@@ -170,7 +170,6 @@ namespace BillboardSample
             GL.Disable(EnableCap.CullFace);
 
             GL.BindVertexArray(vertexArray);
-            GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
 
             GL.DrawElements(PrimitiveType.Triangles, NumBillboards * 6, DrawElementsType.UnsignedInt, 0);
