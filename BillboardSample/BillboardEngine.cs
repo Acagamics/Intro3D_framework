@@ -13,6 +13,9 @@ namespace BillboardSample
     /// Simplistic system for rendering of multiple camera oriented billboards.
     /// billboards must be re-added every frame to keep them camera orientated!
     /// There are many possibilities to improve performance - meant for learning purpose only.
+    /// 
+    /// Note that the index buffer could be shared among all billboard engines (same content).
+    /// The vertex buffer could also be shared among all billboard engines since it is rewriten every frame anyways.
     /// </summary>
     class BillboardEngine : IDisposable
     {
@@ -34,6 +37,7 @@ namespace BillboardSample
 
         private int vertexBuffer;
         private int vertexArray;
+        private int indexBuffer;
 
         private Vector3 camX;
         private Vector3 camY;
@@ -45,7 +49,7 @@ namespace BillboardSample
         {
             MaxBillboardCount = maxNumBillboards;
             NumBillboards = 0;
-            billboardVertices = new BillboardVertex[MaxBillboardCount * 6];
+            billboardVertices = new BillboardVertex[MaxBillboardCount * 4];
 
             int vertexSize = Marshal.SizeOf(typeof(BillboardVertex));
 
@@ -68,6 +72,22 @@ namespace BillboardSample
             GL.EnableVertexAttribArray(2);
                 // Disable vertex array again.
             GL.BindVertexArray(0); 
+
+            // Create index buffer.
+            indexBuffer = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
+            uint[] indices = new uint[maxNumBillboards * 6];
+            for(uint billboard=0; billboard<maxNumBillboards; ++billboard)
+            {
+                indices[billboard * 6 + 0] = billboard*4 + 0;
+                indices[billboard * 6 + 1] = billboard*4 + 1;
+                indices[billboard * 6 + 2] = billboard*4 + 2;
+
+                indices[billboard * 6 + 3] = billboard*4 + 2;
+                indices[billboard * 6 + 4] = billboard*4 + 3;
+                indices[billboard * 6 + 5] = billboard*4 + 0;
+            }
+            GL.BufferData(BufferTarget.ElementArrayBuffer, new IntPtr(maxNumBillboards * sizeof(uint)), indices, BufferUsageHint.StaticDraw);
         }
 
         /// <summary>
@@ -109,25 +129,22 @@ namespace BillboardSample
             }
 
             // computes edge positions
-            billboardVertices[NumBillboards * 6].Position = position - xAxis - yAxis;
-            billboardVertices[NumBillboards * 6].Texcoord = texTopLeft;
-            billboardVertices[NumBillboards * 6].Color = color;
+            int startVertexIndex = NumBillboards * 4;
+            billboardVertices[startVertexIndex].Position = position - xAxis + yAxis;
+            billboardVertices[startVertexIndex].Texcoord = texTopLeft;
+            billboardVertices[startVertexIndex].Color = color;
 
-            billboardVertices[NumBillboards * 6 + 1].Position = position + xAxis - yAxis;
-            billboardVertices[NumBillboards * 6 + 1].Texcoord = new Vector2(texBottomRight.X, texTopLeft.Y);
-            billboardVertices[NumBillboards * 6 + 1].Color = color;
+            billboardVertices[startVertexIndex + 1].Position = position + xAxis + yAxis;
+            billboardVertices[startVertexIndex + 1].Texcoord = new Vector2(texBottomRight.X, texTopLeft.Y);
+            billboardVertices[startVertexIndex + 1].Color = color;
 
-            billboardVertices[NumBillboards * 6 + 2].Position = position - xAxis + yAxis;
-            billboardVertices[NumBillboards * 6 + 2].Texcoord = new Vector2(texTopLeft.X, texBottomRight.Y);
-            billboardVertices[NumBillboards * 6 + 2].Color = color;
+            billboardVertices[startVertexIndex + 2].Position = position + xAxis - yAxis;
+            billboardVertices[startVertexIndex + 2].Texcoord = texBottomRight;
+            billboardVertices[startVertexIndex + 2].Color = color;
 
-            billboardVertices[NumBillboards * 6 + 3] = billboardVertices[NumBillboards * 6 + 1];
-
-            billboardVertices[NumBillboards * 6 + 4].Position = position + xAxis + yAxis;
-            billboardVertices[NumBillboards * 6 + 4].Texcoord = texBottomRight;
-            billboardVertices[NumBillboards * 6 + 4].Color = color;
-
-            billboardVertices[NumBillboards * 6 + 5] = billboardVertices[NumBillboards * 6 + 2];
+            billboardVertices[startVertexIndex + 3].Position = position - xAxis - yAxis;
+            billboardVertices[startVertexIndex + 3].Texcoord = new Vector2(texTopLeft.X, texBottomRight.Y);
+            billboardVertices[startVertexIndex + 3].Color = color;
 
             ++NumBillboards;
         }
@@ -135,7 +152,8 @@ namespace BillboardSample
         public void End()
         {
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
-            GL.BufferSubData<BillboardVertex>(BufferTarget.ArrayBuffer, IntPtr.Zero, new IntPtr(Marshal.SizeOf(typeof(BillboardVertex)) * NumBillboards * 6), billboardVertices);
+            GL.BufferSubData<BillboardVertex>(BufferTarget.ArrayBuffer, IntPtr.Zero, 
+                    new IntPtr(Marshal.SizeOf(typeof(BillboardVertex)) * NumBillboards * 4), billboardVertices);
 
             beginWasCalled = false;
         }
@@ -153,8 +171,9 @@ namespace BillboardSample
 
             GL.BindVertexArray(vertexArray);
             GL.BindBuffer(BufferTarget.ArrayBuffer, vertexBuffer);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, indexBuffer);
 
-            GL.DrawArrays(PrimitiveType.Triangles, 0, NumBillboards * 6);
+            GL.DrawElements(PrimitiveType.Triangles, NumBillboards * 6, DrawElementsType.UnsignedInt, 0);
 
 
             // Reset states.
